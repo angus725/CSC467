@@ -1,1 +1,27 @@
 Lab1
+
+TokenTypes:
+
+Yang:
+OPERATORS (unique, +-*/!><>=<=&&||)
+FLOAT
+INT
+BOOL
+WHILE		
+FOR
+IF
+ELSE
+PREDEFFUNC
+CURLYBRACKET 	{}
+SQUAREBRACKET 	[]
+ROUNDBRACKET 	()
+ENDSTATEMENT	;
+
+
+Angus:
+IDENTIFIER	[_a-zA-Z][_a-zA-Z0-9]{0,30}
+QUALIFIER 	const
+KEYWORD
+DATATYPE
+
+
