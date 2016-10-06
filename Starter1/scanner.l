@@ -14,8 +14,9 @@
 
 #define YY_USER_INIT { yyin = inputFile; }
 #define	yyinput      input
-#define yTRACE(x)    { if (traceScanner) fprintf(traceFile, "TOKEN %3d : %s\n", x, yytext); }
+#define yTRACE(x)    { if (traceScanner) fprintf(traceFile, "TOKEN %3d : %s\n", x, yytext);}
 #define yERROR(x)    { fprintf(errorFile, "\nLEXICAL ERROR, LINE %d: %s\n", yyline, x); errorOccurred = TRUE; yyterminate(); }
+#define yRET_TRACE(x) { yTRACE(x) return x;}
 
 int CheckInt(void);
 int yyline = 1;
@@ -24,6 +25,7 @@ int yyline = 1;
 %option noyywrap
 
 WS          [ \t]
+DIGIT		[0-9]
 
 %%
 "/*"        {
@@ -44,7 +46,22 @@ WS          [ \t]
                   yyline++;
               }
             }
+"\n"		{
+			yyline++;
+		}
+{WS}*		{}
 
-.           { yERROR("Unknown token"); }
+[1-9]{DIGIT}*	{
+				yRET_TRACE(INT)
+			}
+			
+[+\-*/=]		{
+				
+				yRET_TRACE(yytext[0])
+			}
+
+.           { 
+				fprintf(errorFile, "string:\"%s\"\n", yytext);
+				yERROR("Unknown token"); }
 
 %%
