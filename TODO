@@ -20,8 +20,9 @@ ENDSTATEMENT	;
 
 Angus:
 IDENTIFIER	[_a-zA-Z][_a-zA-Z0-9]{0,30}
+	Associated info: name of identifier
 QUALIFIER 	const
-KEYWORD
-DATATYPE
+DATATYPE	see miniGL specsheet
+
 
 
