@@ -10,7 +10,7 @@
 #include "common.h"
 #include "parser.tab.h"
 #include "string.h"
-
+#include <math.h>
 
 #define YY_USER_INIT { yyin = inputFile; }
 #define	yyinput      input
@@ -51,17 +51,70 @@ DIGIT		[0-9]
 		}
 {WS}*		{}
 
-[1-9]{DIGIT}*	{
-				yRET_TRACE(INT)
-			}
+0|([1-9]{DIGIT}*)	{
+			long value;
 			
-[+\-*/=]		{
+			if (yyleng > 10)
+				yERROR("Exceed maximum int literal size")
+			
+			value = strtol(yytext, NULL, 10);
+			if (value > MAX_INTEGER)
+				yERROR("Exceed maximum int literal size")
+			
+			yylval.num = value;
+			yRET_TRACE(INT)
+		}
+
+({DIGIT}*\.{DIGIT}+)|({DIGIT}+\.{DIGIT}*) {
+			float value;
+			
+			if (yyleng > 10)
+				yERROR("Exceed max float literal precision")
+			
+			value = atof(yytext);
+			if (value > HUGE_VALF)
+				yERROR("Exceed maxi float literal size")
+			
+			yylval.fpn = value;
+			yRET_TRACE(INT)
+			
+		}
+
+&&		{yRET_TRACE(AND)}
+
+"||"		{yRET_TRACE(OR)}
+
+==		{yRET_TRACE(EQ)}
+
+"!="		{yRET_TRACE(NEQ)}
+
+"<="		{yRET_TRACE(LE)}
+
+">="		{yRET_TRACE(GE)}
+
+[+\-*/=()\[\]{}<>;!^]		{
 				
 				yRET_TRACE(yytext[0])
 			}
+true|false 	{
+				yRET_TRACE(BOOL)
+			}
+			
+for			{
+				yRET_TRACE(FOR)
+			}
+			
+while		{
+				yRET_TRACE(WHILE)
+			}
 
+if			{
+				yRET_TRACE(IF)
+			}
+else		{
+				yRET_TRACE(ELSE)
+			}
 .           { 
 				fprintf(errorFile, "string:\"%s\"\n", yytext);
 				yERROR("Unknown token"); }
-
 %%

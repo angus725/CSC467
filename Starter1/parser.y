@@ -62,12 +62,12 @@ extern int yyline;        /* variable holding current line number   */
 }
 // TODO:Replace myToken with your tokens, you can use these tokens in flex
 %token          IDENTIFIER QUALIFIER
-%token			IF ELSE
-%token			BOOLEN
+%token			IF ELSE FOR WHILE
+%token			BOOL
 %token			INT FLOAT
-%token			'+' '-' '*' '/' '=' '^' '!' 
-/*%token			"&&" "||" "==" "!=" "<" "<=" ">" ">="*/
-%token			'(' ')'
+%token			'+' '-' '*' '/' '=' '^' '<' '>'
+%token			AND OR EQ NEQ LT LE GT GE
+%token			'(' ')' '[' ']' '{' '}'
 
 
 
@@ -94,7 +94,10 @@ tokens
   ;
 // TODO: replace myToken with the token the you defined.
 token
-  : 	IDENTIFIER | QUALIFIER | IF | ELSE | BOOLEN | INT | FLOAT | '+' | '-' | '*' | '/' | '=' | '^' | '!'
+  : 	IDENTIFIER | QUALIFIER | IF | ELSE | WHILE | FOR | BOOL | INT | FLOAT
+  |		AND | OR | EQ | NEQ | LE | GE
+  | 	'+' | '-' | '*' | '/' | '=' | '^' | '!'
+  |		'<' | '>' | '(' | ')' | '{' | '}' | '[' | ']' | ';'
   ;
 
 
