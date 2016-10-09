@@ -27,8 +27,6 @@ int yyline = 1;
 WS          [ \t]
 DIGIT		[0-9]
 BOL	true|false 	
-FLT	({DIGIT}*\.{DIGIT}+)|({DIGIT}+\.{DIGIT}*) 
-INNT	0|([1-9]{DIGIT}*)
 %%
 "/*"        {
               int c1      = 0;
@@ -53,7 +51,7 @@ INNT	0|([1-9]{DIGIT}*)
 		}
 {WS}*		{}
 
-INNT	{
+0|([1-9]{DIGIT}*)	{
 			long value;
 			
 			if (yyleng > 10)
@@ -67,7 +65,7 @@ INNT	{
 			yRET_TRACE(INT)
 		}
 
-FLT {
+({DIGIT}*\.{DIGIT}+)|({DIGIT}+\.{DIGIT}*) {
 			float value;
 			
 			if (yyleng > 10)
@@ -125,8 +123,7 @@ const		{
 				yRET_TRACE(COMPLEXDATA)
 }
 
-[_a-zA-Z][_a-zA-Z0-9]
-		{
+[_a-zA-Z][_a-zA-Z0-9]	{
 			if(yyleng > 10)
 				yERROR("Exceeded maxinum identifier size")
 			return yRET_TRACE(IDENTIFIER)
