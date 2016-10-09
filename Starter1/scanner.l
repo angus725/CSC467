@@ -26,7 +26,6 @@ int yyline = 1;
 
 WS          [ \t]
 DIGIT		[0-9]
-BOL	true|false 	
 %%
 "/*"        {
               int c1      = 0;
@@ -96,7 +95,8 @@ BOL	true|false
 				
 				yRET_TRACE(yytext[0])
 			}
-BOL	{
+
+true|false	 	{
 				yRET_TRACE(BOOL)
 			}
 			
@@ -123,8 +123,9 @@ const			{
 				yRET_TRACE(COMPLEXDATA)
 			}
 
-[_a-zA-Z][_a-zA-Z0-9]	{
-				if(yyleng > 10)
+[_a-zA-Z][_a-zA-Z0-9]* {
+		/*	unput(*(yytext+yyleng-1)); [^_a-zA-Z0-9] */	
+			if(yyleng > 30)
 					yERROR("Exceeded maxinum identifier size")
 				yRET_TRACE(IDENTIFIER)
 			}
