@@ -26,7 +26,9 @@ int yyline = 1;
 
 WS          [ \t]
 DIGIT		[0-9]
-
+BOL	true|false 	
+FLT	({DIGIT}*\.{DIGIT}+)|({DIGIT}+\.{DIGIT}*) 
+INNT	0|([1-9]{DIGIT}*)
 %%
 "/*"        {
               int c1      = 0;
@@ -51,7 +53,7 @@ DIGIT		[0-9]
 		}
 {WS}*		{}
 
-0|([1-9]{DIGIT}*)	{
+INNT	{
 			long value;
 			
 			if (yyleng > 10)
@@ -65,7 +67,7 @@ DIGIT		[0-9]
 			yRET_TRACE(INT)
 		}
 
-({DIGIT}*\.{DIGIT}+)|({DIGIT}+\.{DIGIT}*) {
+FLT {
 			float value;
 			
 			if (yyleng > 10)
@@ -76,7 +78,7 @@ DIGIT		[0-9]
 				yERROR("Exceed maxi float literal size")
 			
 			yylval.fpn = value;
-			yRET_TRACE(INT)
+			yRET_TRACE(FLOAT)
 			
 		}
 
@@ -96,7 +98,7 @@ DIGIT		[0-9]
 				
 				yRET_TRACE(yytext[0])
 			}
-true|false 	{
+BOL	{
 				yRET_TRACE(BOOL)
 			}
 			
@@ -114,6 +116,26 @@ if			{
 else		{
 				yRET_TRACE(ELSE)
 			}
+
+const		{
+				yRET_TRACE(QUALIFIER_CONST)
+			}
+
+(b|i)?vec[2-4] {
+				yRET_TRACE(COMPLEXDATA)
+}
+
+[_a-zA-Z][_a-zA-Z0-9]
+		{
+			if(yyleng > 10)
+				yERROR("Exceeded maxinum identifier size")
+			return yRET_TRACE(IDENTIFIER)
+		}
+
+,		{
+			yRET_TRACE(SEPERATOR)
+		}
+
 .           { 
 				fprintf(errorFile, "string:\"%s\"\n", yytext);
 				yERROR("Unknown token"); }

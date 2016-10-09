@@ -133,7 +133,7 @@ extern int yyline;        /* variable holding current line number   */
       know about them.  */
    enum yytokentype {
      IDENTIFIER = 258,
-     QUALIFIER = 259,
+     QUALIFIER_CONST = 259,
      IF = 260,
      ELSE = 261,
      FOR = 262,
@@ -148,12 +148,14 @@ extern int yyline;        /* variable holding current line number   */
      LT = 271,
      LE = 272,
      GT = 273,
-     GE = 274
+     GE = 274,
+     COMPLEXDATA = 275,
+     SEPERATOR = 276
    };
 #endif
 /* Tokens.  */
 #define IDENTIFIER 258
-#define QUALIFIER 259
+#define QUALIFIER_CONST 259
 #define IF 260
 #define ELSE 261
 #define FOR 262
@@ -169,8 +171,8 @@ extern int yyline;        /* variable holding current line number   */
 #define LE 272
 #define GT 273
 #define GE 274
-
-
+#define COMPLEXDATA 275
+#define SEPERATOR 276
 
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -183,8 +185,10 @@ typedef union YYSTYPE
   int num;
   char* str;
   float fpn;
-  
-
+/*  int vint[3];
+  char vbool[3];
+  float vfloat[3];
+*/
 
 
 /* Line 293 of yacc.c  */
