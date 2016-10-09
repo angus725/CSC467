@@ -120,14 +120,24 @@ const			{
 			}
 
 (b|i)?vec[2-4] 		{
-				yRET_TRACE(COMPLEXDATA)
+			char * pStr;			
+
+			pStr = (char*)malloc(sizeof(char)*(yyleng+1));
+			strncpy(pStr, yytext, yyleng);
+			yylval.str = pStr;
+			yRET_TRACE(COMPLEXDATA)
 			}
 
 [_a-zA-Z][_a-zA-Z0-9]* {
-		/*	unput(*(yytext+yyleng-1)); [^_a-zA-Z0-9] */	
+			char * pStr;			
+
 			if(yyleng > 30)
 					yERROR("Exceeded maxinum identifier size")
-				yRET_TRACE(IDENTIFIER)
+			pStr = (char*)malloc(sizeof(char)*(yyleng+1));
+			strncpy(pStr, yytext, yyleng);
+			yylval.str = pStr;
+			
+			yRET_TRACE(IDENTIFIER)
 			}
 
 \,			{
