@@ -104,36 +104,36 @@ for			{
 				yRET_TRACE(FOR)
 			}
 			
-while		{
+while			{
 				yRET_TRACE(WHILE)
 			}
 
 if			{
 				yRET_TRACE(IF)
 			}
-else		{
+else			{
 				yRET_TRACE(ELSE)
 			}
 
-const		{
+const			{
 				yRET_TRACE(QUALIFIER_CONST)
 			}
 
-(b|i)?vec[2-4] {
+(b|i)?vec[2-4] 		{
 				yRET_TRACE(COMPLEXDATA)
-}
+			}
 
 [_a-zA-Z][_a-zA-Z0-9]	{
-			if(yyleng > 10)
-				yERROR("Exceeded maxinum identifier size")
-			return yRET_TRACE(IDENTIFIER)
-		}
+				if(yyleng > 10)
+					yERROR("Exceeded maxinum identifier size")
+				yRET_TRACE(IDENTIFIER)
+			}
 
-,		{
-			yRET_TRACE(SEPERATOR)
-		}
+\,			{
+				yRET_TRACE(SEPERATOR)
+			}
 
-.           { 
+.           		{	 
 				fprintf(errorFile, "string:\"%s\"\n", yytext);
 				yERROR("Unknown token"); }
 %%
