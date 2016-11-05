@@ -24,7 +24,8 @@
 #define YYERROR_VERBOSE
 #define yTRACE(x)    { if (traceParser) fprintf(traceFile, "%s\n", x); }
 
-void yyerror(char* s);    /* what to do in case of error            */
+void yyerror(const char* s);    /* what to do in case of error            */
+
 int yylex();              /* procedure for calling lexical analyzer */
 extern int yyline;        /* variable holding current line number   */
 
@@ -82,13 +83,17 @@ enum {
 %token <as_int>   INT_C
 %token <as_str>   ID
 
-%left     '|'
-%left     '&'
+%left     OR
+%left     AND
 %nonassoc '=' NEQ '<' LEQ '>' GEQ
 %left     '+' '-'
 %left     '*' '/'
 %right    '^'
 %nonassoc '!' UMINUS
+%left		'[' '('
+
+%nonassoc NO_ELSE
+%nonassoc ELSE
 
 %start    program
 
@@ -102,54 +107,47 @@ enum {
  *    2. Implement the trace parser option of the compiler
  ***********************************************************************/
 program
-  :   tokens       
+  : scope { yTRACE("program -> scope");}
   ;
-tokens
-  :  tokens token  
-  |
-  ;
-token
-  : ID 
-  | AND
-  | OR
-  | NEQ
-  | LEQ
-  | GEQ
-  | EQ
-  | TRUE_C
-  | FALSE_C
-  | INT_C
-  | FLOAT_C
-  | CONST
-  | ELSE
-  | IF
-  | WHILE
-  | FLOAT_T
-  | INT_T
-  | BOOL_T
-  | VEC_T
-  | IVEC_T
-  | BVEC_T
-  | FUNC               
-  | '+'
-  | '-'
-  | '*'
-  | '/'
-  | '^'  
-  | '!'
-  | '='
-  | '<'
-  | '>'   
-  | ','
-  | ';'
-  | '('
-  | ')'
-  | '['
-  | ']'
-  | '{'
-  | '}'                                    
-  ;
+scope
+	:	'{' declarations statements '}' { yTRACE("scope -> '{' declarations statements '}'");}
+	;
+declarations
+	:	declarations declaration { yTRACE("declarations -> declarations declaration");}
+	|
+	;
+statements
+	:	statements statement { yTRACE("statements -> statements statement");}
+	|
+	;
+declaration
+	:	type ID ':' { yTRACE("declaration -> type ID ':'");}
+	|	type ID	'=' expression ';' { yTRACE("declaration -> type ID	'=' expression ';'");}
+	|	CONST type ID '=' expression ';' { yTRACE("declaration -> 'const' type ID '=' expression ';'");}
+	;
+statement
+	:	variable '=' expression ';' { yTRACE("statement -> variable '=' expression ';'");}
+	|	IF '(' expression ')' statement %prec NO_ELSE { yTRACE("statement -> IF '(' expression ')' statement");}
+	|	IF '(' expression ')' statement ELSE statement %prec ELSE { yTRACE("statement -> IF '(' expression ')' statement ELSE statement");}
+	|	WHILE '(' expression ')' statement { yTRACE("statement -> WHILE '(' expression ')' statement");}
+	|	scope { yTRACE("statement -> scope");}
+	|	';'
+	;
+	
+type
+	:	FLOAT_T { yTRACE("type -> FLOAT_T");}
+	|	INT_T { yTRACE("type -> INT_T");}
+	|	BOOL_T { yTRACE("type -> BOOL_T");}
+	|	VEC_T { yTRACE("type -> VEC_T");}
+	|	IVEC_T { yTRACE("type -> IVEC_T");}
+	|	BVEC_T { yTRACE("type -> BVEC_T");}
 
+expression
+	:	variable
+	;
+variable
+	:	ID
+	;
 
 %%
 
@@ -159,7 +157,7 @@ token
  * The given yyerror function should not be touched. You may add helper
  * functions as necessary in subsequent phases.
  ***********************************************************************/
-void yyerror(char* s) {
+void yyerror(const char* s) {
   if(errorOccurred) {
     return;    /* Error has already been reported by scanner */
   } else {
