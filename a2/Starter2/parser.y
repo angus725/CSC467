@@ -149,8 +149,22 @@ expression
 	| function	{ yTRACE("expression -> function");}
 	| INT_C 		{ yTRACE("expression -> INT_C");}
 	|	FLOAT_C		{ yTRACE("expression -> FLOAT_C");}
-	| UMINUS expression %prec UMINUS { yTRACE("expression -> uniary_op expression");}
-	| expression OR expression %prec OR { yTRACE("expression -> expression binary_op expression");}
+	| '!' expression %prec '!' { yTRACE("expression -> '!' expression");}
+	| UMINUS expression %prec UMINUS { yTRACE("expression -> UMINUS expression");}
+	| expression OR expression %prec OR { yTRACE("expression -> expression OR expression");}
+	| expression AND expression %prec AND { yTRACE("expression -> expression AND expression");}
+	| expression '=' expression %prec '=' { yTRACE("expression -> expression '=' expression");}
+	| expression NEQ expression %prec NEQ { yTRACE("expression -> expression NEQ expression");}
+	| expression '<' expression %prec '<' { yTRACE("expression -> expression '<' expression");}
+	| expression LEQ expression %prec LEQ { yTRACE("expression -> expression LEQ expression");}
+	| expression '>' expression %prec '>' { yTRACE("expression -> expression '>' expression");}
+	| expression GEQ expression %prec GEQ { yTRACE("expression -> expression GEQ expression");}
+	| expression EQ expression %prec EQ { yTRACE("expression -> expression EQ expression");}
+	| expression '+' expression %prec '+' { yTRACE("expression -> expression '+' expression");}
+	| expression '-' expression %prec '-' { yTRACE("expression -> expression '-' expression");}
+	| expression '*' expression %prec '*' { yTRACE("expression -> expression '*' expression");}
+	| expression '/' expression %prec '/' { yTRACE("expression -> expression '/' expression");}
+	| expression '^' expression %prec '^' { yTRACE("expression -> expression '^' expression");}
 	| FALSE_C	 	{ yTRACE("expression -> FALSE_C");}
 	| TRUE_C		{ yTRACE("expression -> TRUE_C");}
 	| '(' expression ')'	{ yTRACE("expression -> '(' expression ')' ");}
