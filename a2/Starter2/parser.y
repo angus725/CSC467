@@ -148,8 +148,8 @@ expression
 	:	variable	{ yTRACE("expression -> variable");}
 	| constructor	{ yTRACE("expression -> constructor");}
 	| function	{ yTRACE("expression -> function");}
-	| INT_T 		{ yTRACE("expression -> INT_T");}
-	|	FLOAT_T		{ yTRACE("expression -> FLOAT_T");}
+	| INT_C 		{ yTRACE("expression -> INT_C");}
+	|	FLOAT_C		{ yTRACE("expression -> FLOAT_C");}
 	| uniary_op expression { yTRACE("expression -> uniary_op expression");}
 	| expression binary_op expression { yTRACE("expression -> expression binary_op expression");}
 	| FALSE_C	 	{ yTRACE("expression -> FALSE_C");}
@@ -157,7 +157,7 @@ expression
 	| '(' expression ')'	{ yTRACE("expression -> '(' expression ')' ");}
 	;
 variable
-	:	ID			{ yTRACE("variable -> ID");}
+	:	ID 			{ yTRACE("variable -> ID");}
 	|	ID '[' INT_T ']' { yTRACE("variable -> ID '[' INT_T ']'");}
 	;
 uniary_op
@@ -165,7 +165,7 @@ uniary_op
 	| UMINUS	{ yTRACE("uniary_op -> UMINUS ");}
 	;
 binary_op
-	:	OR	{ yTRACE("binary_op -> OR");}
+	:	OR 	{ yTRACE("binary_op -> OR");}
 	| AND	{ yTRACE("binary_op -> AND");}
 	| '='	{ yTRACE("binary_op -> '='");}
 	| NEQ { yTRACE("binary_op -> NEQ");}
