@@ -85,20 +85,18 @@ enum {
 
 %left     OR
 %left     AND
-%nonassoc '=' NEQ '<' LEQ '>' GEQ
+%nonassoc '=' NEQ '<' LEQ '>' GEQ EQ
 %left     '+' '-'
 %left     '*' '/'
 %right    '^'
 %nonassoc '!' UMINUS
 %left		'[' '('
-
+%right		']' ')'
 
 %nonassoc NO_ELSE
 %nonassoc ELSE
 
 %start    program
-
-%%
 
 /***********************************************************************
  *  Yacc/Bison rules
@@ -107,6 +105,8 @@ enum {
  *       language grammar
  *    2. Implement the trace parser option of the compiler
  ***********************************************************************/
+%%
+
 program
   : scope { yTRACE("program -> scope");}
   ;
@@ -122,9 +122,10 @@ statements
 	|
 	;
 declaration
-	:	type ID ':' { yTRACE("declaration -> type ID ':'");}
+	:	type ID ';' { yTRACE("declaration -> type ID ';'");}
 	|	type ID	'=' expression ';' { yTRACE("declaration -> type ID	'=' expression ';'");}
 	|	CONST type ID '=' expression ';' { yTRACE("declaration -> 'const' type ID '=' expression ';'");}
+	|			/* is this correct?*/
 	;
 statement
 	:	variable '=' expression ';' { yTRACE("statement -> variable '=' expression ';'");}
@@ -144,12 +145,58 @@ type
 	|	BVEC_T { yTRACE("type -> BVEC_T");}
 
 expression
-	:	variable
+	:	variable	{ yTRACE("expression -> variable");}
+	| constructor	{ yTRACE("expression -> constructor");}
+	| function	{ yTRACE("expression -> function");}
+	| INT_T 		{ yTRACE("expression -> INT_T");}
+	|	FLOAT_T		{ yTRACE("expression -> FLOAT_T");}
+	| uniary_op expression { yTRACE("expression -> uniary_op expression");}
+	| expression binary_op expression { yTRACE("expression -> expression binary_op expression");}
+	| FALSE_C	 	{ yTRACE("expression -> FALSE_C");}
+	| TRUE_C		{ yTRACE("expression -> TRUE_C");}
+	| '(' expression ')'	{ yTRACE("expression -> '(' expression ')' ");}
 	;
 variable
-	:	ID
+	:	ID			{ yTRACE("variable -> ID");}
+	|	ID '[' INT_T ']' { yTRACE("variable -> ID '[' INT_T ']'");}
 	;
-
+uniary_op
+	: '!'  	{ yTRACE("uniary_op -> '!'");}
+	| UMINUS	{ yTRACE("uniary_op -> UMINUS ");}
+	;
+binary_op
+	:	OR	{ yTRACE("binary_op -> OR");}
+	| AND	{ yTRACE("binary_op -> AND");}
+	| '='	{ yTRACE("binary_op -> '='");}
+	| NEQ { yTRACE("binary_op -> NEQ");}
+	| '<'	{ yTRACE("binary_op -> '<'");}
+	| LEQ	{ yTRACE("binary_op -> LEQ");}
+	| '>'	{ yTRACE("binary_op -> '>'");}
+	| GEQ	{ yTRACE("binary_op -> GEQ");}
+	| EQ	{ yTRACE("binary_op -> EQ");}
+	| '+' { yTRACE("binary_op -> '+'");}
+	| '-'	{ yTRACE("binary_op -> '-'");}
+	| '*'	{ yTRACE("binary_op -> '*'");}
+	| '/'	{ yTRACE("binary_op -> '/'");}
+	| '^'	{ yTRACE("binary_op -> '^'");}
+	;
+constructor
+	:	type '(' arguments ')' { yTRACE("constructor -> type '(' arguments ')' ");}
+	;
+function
+	:	function_name '(' arguments_opt ')' { yTRACE("function_name -> FUNC '(' arguments_opt ')' ");}
+	;
+function_name
+	:	FUNC	{ yTRACE("function_name -> FUNC");}
+	;
+arguments_opt
+	:	arguments  { yTRACE("arguments_opt -> arguments");}
+	|
+	;
+arguments
+	: arguments ',' expression arguments {yTRACE("arguments -> arguments ',' expression arguments");}
+	| expression	 {yTRACE("arguments -> expression");}
+	;
 %%
 
 /***********************************************************************ol
