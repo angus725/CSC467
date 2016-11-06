@@ -125,7 +125,6 @@ declaration
 	:	type ID ';' { yTRACE("declaration -> type ID ';'");}
 	|	type ID	'=' expression ';' { yTRACE("declaration -> type ID	'=' expression ';'");}
 	|	CONST type ID '=' expression ';' { yTRACE("declaration -> 'const' type ID '=' expression ';'");}
-	|			/* is this correct?*/
 	;
 statement
 	:	variable '=' expression ';' { yTRACE("statement -> variable '=' expression ';'");}
@@ -150,8 +149,8 @@ expression
 	| function	{ yTRACE("expression -> function");}
 	| INT_C 		{ yTRACE("expression -> INT_C");}
 	|	FLOAT_C		{ yTRACE("expression -> FLOAT_C");}
-	| uniary_op expression { yTRACE("expression -> uniary_op expression");}
-	| expression binary_op expression { yTRACE("expression -> expression binary_op expression");}
+	| UMINUS expression %prec UMINUS { yTRACE("expression -> uniary_op expression");}
+	| expression OR expression %prec OR { yTRACE("expression -> expression binary_op expression");}
 	| FALSE_C	 	{ yTRACE("expression -> FALSE_C");}
 	| TRUE_C		{ yTRACE("expression -> TRUE_C");}
 	| '(' expression ')'	{ yTRACE("expression -> '(' expression ')' ");}
@@ -160,26 +159,30 @@ variable
 	:	ID 			{ yTRACE("variable -> ID");}
 	|	ID '[' INT_T ']' { yTRACE("variable -> ID '[' INT_T ']'");}
 	;
+/*
 uniary_op
 	: '!'  	{ yTRACE("uniary_op -> '!'");}
-	| UMINUS	{ yTRACE("uniary_op -> UMINUS ");}
+	| UMINUS %prec UMINUS { yTRACE("uniary_op -> UMINUS ");}
 	;
+
 binary_op
-	:	OR 	{ yTRACE("binary_op -> OR");}
-	| AND	{ yTRACE("binary_op -> AND");}
-	| '='	{ yTRACE("binary_op -> '='");}
-	| NEQ { yTRACE("binary_op -> NEQ");}
-	| '<'	{ yTRACE("binary_op -> '<'");}
-	| LEQ	{ yTRACE("binary_op -> LEQ");}
-	| '>'	{ yTRACE("binary_op -> '>'");}
-	| GEQ	{ yTRACE("binary_op -> GEQ");}
-	| EQ	{ yTRACE("binary_op -> EQ");}
-	| '+' { yTRACE("binary_op -> '+'");}
-	| '-'	{ yTRACE("binary_op -> '-'");}
-	| '*'	{ yTRACE("binary_op -> '*'");}
-	| '/'	{ yTRACE("binary_op -> '/'");}
-	| '^'	{ yTRACE("binary_op -> '^'");}
+	: OR %prec OR { yTRACE("binary_op -> OR");}
+	| AND %prec AND { yTRACE("binary_op -> AND");}
+	| '=' %prec '=' { yTRACE("binary_op -> '='");}
+	| NEQ %prec NEQ { yTRACE("binary_op -> NEQ");}
+	| '<' %prec '<' { yTRACE("binary_op -> '<'");}
+	| LEQ %prec LEQ { yTRACE("binary_op -> LEQ");}
+	| '>' %prec '>' { yTRACE("binary_op -> '>'");}
+	| GEQ %prec GEQ { yTRACE("binary_op -> GEQ");}
+	| EQ %prec EQ { yTRACE("binary_op -> EQ");}
+	| '+' %prec '+' { yTRACE("binary_op -> '+'");}
+	| '-' %prec '-' { yTRACE("binary_op -> '-'");}
+	| '*' %prec '*' { yTRACE("binary_op -> '*'");}
+	| '/' %prec '/' { yTRACE("binary_op -> '/'");}
+	| '^' %prec '^' { yTRACE("binary_op -> '^'");}
 	;
+*/
+
 constructor
 	:	type '(' arguments ')' { yTRACE("constructor -> type '(' arguments ')' ");}
 	;
@@ -194,7 +197,7 @@ arguments_opt
 	|
 	;
 arguments
-	: arguments ',' expression arguments {yTRACE("arguments -> arguments ',' expression arguments");}
+	: arguments ',' expression {yTRACE("arguments -> arguments ',' expression arguments");}
 	| expression	 {yTRACE("arguments -> expression");}
 	;
 %%
