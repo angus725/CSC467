@@ -3,5 +3,16 @@ Lab 2 report
 Angus Liu   1000065760
 Eric Yang   999999514
 
-Our group broke down the work by splitting the productions rules in half and take away the dependencies by making the non-terminal worked on by the other person recognize any identifier. 2 Major challenges faced during this lab are shift/reduce conflicts from the dangling else problem and taking care of operator precedence. In both cases the production rule given had to be modified, and precedence has to be specified by adding explicit %prec. We verified the solution by running the compiler with trace flag -Tn on test cases we have written, both negative and positive.
+Our group broke down the work by splitting the productions rules in half.
+Dependencies were resolved by giving one person all non-terminals,
+and the other all identifiers.
+
+2 Major challenges faced during this lab are shift/reduce conflicts
+from the dangling else problem, and taking care of operator precedence.
+In both cases the production rule given had to be modified,
+and precedence has to be specified by adding explicit %prec.
+
+We verified the solution by running the compiler with
+trace flag -Tn on test cases we have written,
+including both correct and incorrect tests.
 

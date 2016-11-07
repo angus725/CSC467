@@ -171,31 +171,8 @@ expression
 	;
 variable
 	:	ID 			{ yTRACE("variable -> ID");}
-	|	ID '[' INT_T ']' { yTRACE("variable -> ID '[' INT_T ']'");}
+	|	ID '[' INT_C ']' { yTRACE("variable -> ID '[' INT_C ']'");}
 	;
-/*
-uniary_op
-	: '!'  	{ yTRACE("uniary_op -> '!'");}
-	| UMINUS %prec UMINUS { yTRACE("uniary_op -> UMINUS ");}
-	;
-
-binary_op
-	: OR %prec OR { yTRACE("binary_op -> OR");}
-	| AND %prec AND { yTRACE("binary_op -> AND");}
-	| '=' %prec '=' { yTRACE("binary_op -> '='");}
-	| NEQ %prec NEQ { yTRACE("binary_op -> NEQ");}
-	| '<' %prec '<' { yTRACE("binary_op -> '<'");}
-	| LEQ %prec LEQ { yTRACE("binary_op -> LEQ");}
-	| '>' %prec '>' { yTRACE("binary_op -> '>'");}
-	| GEQ %prec GEQ { yTRACE("binary_op -> GEQ");}
-	| EQ %prec EQ { yTRACE("binary_op -> EQ");}
-	| '+' %prec '+' { yTRACE("binary_op -> '+'");}
-	| '-' %prec '-' { yTRACE("binary_op -> '-'");}
-	| '*' %prec '*' { yTRACE("binary_op -> '*'");}
-	| '/' %prec '/' { yTRACE("binary_op -> '/'");}
-	| '^' %prec '^' { yTRACE("binary_op -> '^'");}
-	;
-*/
 
 constructor
 	:	type '(' arguments ')' { yTRACE("constructor -> type '(' arguments ')' ");}
