@@ -13,6 +13,6 @@ In both cases the production rule given had to be modified,
 and precedence has to be specified by adding explicit %prec.
 
 We verified the solution by running the compiler with
-trace flag -Tn on test cases we have written,
+trace flag -Tp on test cases we have written,
 including both correct and incorrect tests.
 
