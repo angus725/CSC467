@@ -16,3 +16,5 @@ We verified the solution by running the compiler with
 trace flag -Tp on test cases we have written,
 including both correct and incorrect tests.
 
+
+Note: testParser.sh is included to test the parser in a single command
