@@ -26,12 +26,14 @@ typedef enum {
   IF_STATEMENT,
   ASSIGN_STATEMENT,
   TYPE,
+  EXPRESSION_START,
   VARIABLE,
   FUNC_CALL_EXP,
   CONSTRUCTOR_EXP,
   UNARY_EXP,
   BINARY_EXP,
   LITERAL_EXP,
+  EXPRESSION_END,
   ARGUMENTS,
   ARGUMENTS_OPT
 } node_kind;
@@ -99,8 +101,8 @@ struct node_ {
     } declaration;
 
 	struct{
-		node* variable;
-		node* expression;
+		node *variable;
+		node *expression;
 	} assignment_statement;
 
 	struct{
@@ -111,7 +113,7 @@ struct node_ {
 
 	struct{
 	   enum var_type var_type;
-	   int array_len;
+	   int array_bound;
 	} type;
 
 	struct{
@@ -128,12 +130,14 @@ struct node_ {
 	struct {
 		enum unary_opt uopt;
 		node *operand;
+		char *result_type;
 	} unary_exp;
 
 	struct {
 		enum binary_opt bopt;
 		node *operand1;
 		node *operand2;
+		char *result_type; //Need to be filled from semantic analysis
 	} binary_exp;
 
 	struct{
@@ -148,6 +152,8 @@ struct node_ {
 	struct{
 			char* identifier;
 			int array_index;
+			int has_index;
+			char *var_type; //Need to be filled from sematic analysis
 	} variable;
   };
 };

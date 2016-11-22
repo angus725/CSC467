@@ -382,12 +382,12 @@ expression
 variable
   : ID
       {
-      	$$ = ast_allocate(VARIABLE, yyline, $1, NULL);
+      	$$ = ast_allocate(VARIABLE, yyline, $1, 0);
       	yTRACE("variable -> ID \n")
       }
   | ID '[' INT_C ']' %prec '['
       {
-      	$$ = ast_allocate(VARIABLE, yyline, $1, $3);
+      	$$ = ast_allocate(VARIABLE, yyline, $1, 1, $3);
       	yTRACE("variable -> ID [ INT_C ] \n")
       }
   ;
