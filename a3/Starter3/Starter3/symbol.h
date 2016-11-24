@@ -9,32 +9,32 @@
 #include <iterator>
 #include <utility>
 #include <string>
+#include <memory>
+#include <vector>
+#include "ast.h"
+#include <cassert>
 
-// using namespace std;
+using namespace std;
 
-struct node;
-
-class Symbol
+class SymbolCactus
 {
-public:
-    Symbol();
-    ~Symbol();
 
-private:
-    node *N;
+  public:
+    SymbolCactus();
+    ~SymbolCactus();
+    int insert(node *N); // see defines in symbol.c for return value
+    node *find(const char *ID);
+    node *find(std::string ID);
+    void pushScope();
+    void popScope();
+
+  private:
+    list<unordered_map<string, node *>> symbolsTable; // each node must be of type variable
+    list<unordered_map<string, node *>>::iterator symbolTableIt;
+
+    SymbolCactus(const SymbolCactus &);            // disable copy-construction
+    SymbolCactus &operator=(const SymbolCactus &); // disable assignment
 };
-
-Symbol::Symbol()
-{
-}
-
-Symbol::~Symbol()
-{
-}
-
-std::list<
-    std::unordered_map<std::string,Symbol> 
-> symbolTable; // use unordered map instead of map
 
 // std::list<int> ast;
 

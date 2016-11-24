@@ -3,6 +3,8 @@
 #define AST_H_ 1
 
 #include <stdarg.h>
+#include <string>
+#include <stdint.h>
 // #include "semantic.h"
 
 // Dummy node just so everything compiles, create your own node/nodes
@@ -18,6 +20,11 @@
 struct node_;
 typedef struct node_ node;
 extern node *ast;
+
+#define RESULT 		0x1
+#define ATTRIBUTE	0x2
+#define UNIFORM		0x4 
+#define INITIALIZED 0x8
 
 typedef enum {
   UNKNOWN,
@@ -39,10 +46,19 @@ typedef enum {
   ARGUMENTS_OPT
 } node_kind;
 
-enum var_type {
+enum Var_type {
 	TYPE_INT,
 	TYPE_BOOL,
 	TYPE_FLOAT,
+	TYPE_VEC2,
+	TYPE_VEC3,
+	TYPE_VEC4,
+	TYPE_VINT2,
+	TYPE_VINT3,
+	TYPE_VINT4,
+	TYPE_VBOOL2,
+	TYPE_VBOOL3,
+	TYPE_VBOOL4,
 	TYPE_ANY, // for bypassing errors
 	NONE = 0,
 	INVALID = -1
@@ -87,6 +103,9 @@ enum literal_type {
 
 struct node_ {
 
+	// node_() : node_kind(UNKNOWN), line_num(0), constantValue(0), {0}{};
+	~node_(){};
+
   // an example of tagging each node with a type
   node_kind kind;
   int line_num;
@@ -124,7 +143,7 @@ struct node_ {
 	} if_statement;
 
 	struct{
-	   enum var_type var_type;
+	   enum Var_type var_type;
 	   int array_bound;
 	} type;
 
@@ -163,9 +182,11 @@ struct node_ {
 
 	struct{
 			char* identifier;
-			int array_index;
+			int array_index;		// ie, the 4 in vec4 vector[4]
 			int has_index;
-			char *var_type; //Need to be filled from sematic analysis
+            int8_t attribute;		//Need to be filled from sematic analysis
+            enum Var_type var_type;	//Need to be filled from sematic analysis
+			std::string sVar_type; //Need to be filled from sematic analysis - exact name of the type
 	} variable;
   };
 };

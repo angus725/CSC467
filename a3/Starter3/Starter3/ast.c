@@ -50,7 +50,7 @@ node *ast_allocate(node_kind kind, ...) {
 	  ast->if_statement.else_body = va_arg(args, node*);
 	  break;
   case TYPE:
-	  ast->type.var_type = (enum var_type)va_arg(args, int);
+	  ast->type.var_type = (enum Var_type)va_arg(args, int);
 	  ast->type.array_bound = va_arg(args, int);
 	  break;
   case FUNC_CALL_EXP:
@@ -209,7 +209,7 @@ static char *bopt_to_string(enum binary_opt opt)
 	}
 }
 
-static char *type_to_str(enum var_type type, int array_bound) {
+static char *type_to_str(enum Var_type type, int array_bound) {
 	switch (type) {
 	case TYPE_INT:
 		if (array_bound)
@@ -303,10 +303,10 @@ static void print_node_pre(node *ast)
 		  break;
 	  case VARIABLE:
 		  if (ast->variable.has_index) {
-			  printf("(INDEX %s %s %d ", ast->variable.var_type,
+			  printf("(INDEX %s %s %d ", ast->variable.sVar_type.c_str(),
 					  ast->variable.identifier, ast->variable.array_index);
 		  } else
-			  printf("%s %s ", ast->variable.var_type, ast->variable.identifier);
+			  printf("%s %s ", ast->variable.sVar_type.c_str(), ast->variable.identifier);
 		  break;
 	  default: break;
 	  }

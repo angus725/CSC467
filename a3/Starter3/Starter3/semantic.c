@@ -45,6 +45,7 @@ void post_check(node *N)
         //TODO type must equal argument
         // TODO const expressions are allowed
         //TODO variable must not have been declared before in current scope
+        // set variable type for checking stuff later
         break;
     case ASSIGN_STATEMENT:
         // TODO match operators
