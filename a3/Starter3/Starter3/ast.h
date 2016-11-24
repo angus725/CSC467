@@ -42,12 +42,17 @@ enum var_type {
 	TYPE_INT,
 	TYPE_BOOL,
 	TYPE_FLOAT,
+	TYPE_ANY, // for bypassing errors
+	NONE = 0,
+	INVALID = -1
 };
 
 enum func_type{
   FUNC_DP3 = 0,
   FUNC_LIT = 1,
-  FUNC_RSQ = 2
+  FUNC_RSQ = 2,
+  FUNC_ANY = 3, // for bypassing errors
+
 };
 
 enum unary_opt {
@@ -74,7 +79,9 @@ enum binary_opt {
 enum literal_type {
 	LIT_BOOL,
 	LIT_INT,
-	LIT_FLOAT
+	LIT_FLOAT,
+	LIT_ANY, // for bypassing errors
+
 };
 
 struct node_ {
@@ -82,6 +89,7 @@ struct node_ {
   // an example of tagging each node with a type
   node_kind kind;
   int line_num;
+  int constantValue; // for symatic checker, don't worry about this during parsing.
   union {
     struct {
     	node *declarations;
@@ -91,6 +99,9 @@ struct node_ {
     struct {
 		node *nodes;
 		node *cur_node;
+		char *last_var_result_type; //Need to be filled from semantic analysis
+		// if the var types are not identical, it should be -1
+		// if there is no result type, it should be 0
     } multi_node;
 
     struct {

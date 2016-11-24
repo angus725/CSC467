@@ -87,6 +87,11 @@ int main (int argc, char *argv[]) {
     return 0; // parse failed
   }
 
+  if(semantic_check(ast) != 0)
+  {
+    return 0; // semantic_check failed
+  }
+
 /* Phase 3: Call the AST dumping routine if requested */
   if (dumpAST)
     ast_print(ast);
