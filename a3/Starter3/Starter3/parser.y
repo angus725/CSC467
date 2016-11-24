@@ -20,7 +20,7 @@
 
 #include "common.h"
 #include "ast.h"
-#include "symbol.h"
+// #include "symbol.h"
 #include "semantic.h"
 
 #define YYERROR_VERBOSE

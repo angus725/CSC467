@@ -4,15 +4,39 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <map>
+#include <unordered_map>
 #include <list>
+#include <iterator>
+#include <utility>
+#include <string>
 
-using namespace std;
+// using namespace std;
 
+struct node;
 
+class Symbol
+{
+public:
+    Symbol();
+    ~Symbol();
 
+private:
+    node *N;
+};
 
+Symbol::Symbol()
+{
+}
 
+Symbol::~Symbol()
+{
+}
+
+std::list<
+    std::unordered_map<std::string,Symbol> 
+> symbolTable; // use unordered map instead of map
+
+// std::list<int> ast;
 
 #endif
 
