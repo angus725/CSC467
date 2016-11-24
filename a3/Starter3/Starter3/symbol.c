@@ -114,7 +114,7 @@ int SymbolCactus::insert(node *N)
     unordered_map<string, node *> *localSymbolTable = &(*symbolTableIt);
 
     auto findResult = localSymbolTable->find(sIdentifier); // find returns a std::pair with strange syntax
-    if (findResult != localSymbolTable->end()) // duplicate found
+    if (findResult != localSymbolTable->end())             // duplicate found
         return ERROR_DUPLICATE_VARIABLE;
 
     localSymbolTable->insert({sIdentifier, N});
@@ -128,10 +128,18 @@ node *SymbolCactus::find(const char *ID)
 }
 node *SymbolCactus::find(std::string ID)
 {
-    auto search = symbolTableIt->find(ID);
-    if (search == symbolTableIt->end()) // not found
-        return NULL;
-    return search->second; // search is a std::pair< key, value>, where value is node*
+    list<unordered_map<string, node *>>::reverse_iterator symbolTableReIt = symbolsTable.rbegin(); // reverse iterator
+    while (symbolTableReIt != symbolsTable.rend())
+    {
+        auto search = symbolTableIt->find(ID);
+
+        if (search != symbolTableIt->end()) // found
+            return search->second;          // search is a std::pair< key, value>, where value is node*
+
+        symbolTableReIt++; // this should move the iterator backwards towards the head..
+    }
+
+    return NULL;
 }
 
 void SymbolCactus::pushScope()
@@ -151,5 +159,4 @@ void SymbolCactus::popScope()
     assert(symbolTableIt != symbolsTable.begin());
     symbolsTable.pop_back();
     symbolTableIt--;
-
 }
