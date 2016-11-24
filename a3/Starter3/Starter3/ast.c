@@ -100,7 +100,7 @@ node *ast_allocate(node_kind kind, ...) {
 }
 
 
-static void ast_traversal (
+void ast_traversal (
 		node *ast,
 		void (*pre_order_func)(node *N),
 		void (*post_order_func)(node *N))

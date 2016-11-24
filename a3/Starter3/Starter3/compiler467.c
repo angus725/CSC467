@@ -24,6 +24,8 @@
 
 /* Phases 3,4: Uncomment following includes as needed */
 #include "ast.h"
+// #include "semantic.h"
+
 //#include "codegen.h"
 
 /***********************************************************************
@@ -51,6 +53,10 @@ extern int   yyline;
 
 /* Phase 2: Parser Interface. Merely uncomment the following line */
 extern int yyparse(void);
+
+extern int semantic_check(node *ast);
+
+
 
 /***********************************************************************
  * Main program for the Compiler

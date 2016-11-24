@@ -1,6 +1,12 @@
 
 #include "semantic.h"
 
+void pre_check(node* N);// does the actual checking
+void post_check(node* N); // does the actual checking
+
+static int semantic_fail = 0; // default to not-fail
+static int nestedIfCount = 0; 
+
 int semantic_check(node *ast)
 {
 

@@ -3,6 +3,7 @@
 #define AST_H_ 1
 
 #include <stdarg.h>
+// #include "semantic.h"
 
 // Dummy node just so everything compiles, create your own node/nodes
 //
@@ -172,5 +173,9 @@ struct node_ {
 node *ast_allocate(node_kind type, ...);
 void ast_free(node *ast);
 void ast_print(node * ast);
+void ast_traversal (
+		node *ast,
+		void (*pre_order_func)(node *N),
+		void (*post_order_func)(node *N));
 
 #endif /* AST_H_ */
