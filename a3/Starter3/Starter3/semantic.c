@@ -7,7 +7,14 @@ void post_check(node *N); // does the actual checking
 static int semantic_fail = 0; // default to not-fail
 static int nestedIfCount = 0;
 
-Var_type getExpressionResult(node* N);// TODO, N must be expression
+Var_type getExpressionResult(node* N)
+{
+    //inputs: N must be an "EXPRESSION"
+    // all nodes below N has already been traversed by semantic check
+
+    // outputs: return must be the type the expression N returns
+    return TYPE_ANY;
+}
 
 int semantic_check(node *ast)
 {
@@ -47,12 +54,12 @@ void post_check(node *N)
         // NO NEED: check and fill last_var_result_type to the struct multi_node definition
         break;
     case DECLARATION:
-        // if( N->type.var_type != getExpressionResult(N))
-        // {
-        //     varTypeToText(N->type.var_type, tempErrorString);
-        //     varTypeToText(getExpressionResult(N), tempErrorStringB);
-        //     fprintf(errorFile, "ERROR on line %i, expecting %s but got %s\n",N->line_num, tempErrorString.c_str(),tempErrorStringB.c_str());
-        // }
+        if( N->type.var_type != getExpressionResult(N))
+        {
+            varTypeToText(N->type.var_type, tempErrorString);
+            varTypeToText(getExpressionResult(N), tempErrorStringB);
+            fprintf(errorFile, "ERROR on line %i, expecting %s but got %s\n",N->line_num, tempErrorString.c_str(),tempErrorStringB.c_str());
+        }
             
         //TODO type must equal argument
         // TODO const expressions are allowed
