@@ -3,6 +3,7 @@
 
 #include "ast.h"
 #include "symbol.h"
+#include "common.h"
 extern std::unique_ptr<SymbolCactus> symbolCactus;
 
 

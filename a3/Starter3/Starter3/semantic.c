@@ -54,15 +54,18 @@ void post_check(node *N)
         // NO NEED: check and fill last_var_result_type to the struct multi_node definition
         break;
     case DECLARATION:
-        if( N->type.var_type != getExpressionResult(N))
+        if( N->type.var_type != getExpressionResult(N->declaration.expression)) // type must equal argument
         {
             varTypeToText(N->type.var_type, tempErrorString);
             varTypeToText(getExpressionResult(N), tempErrorStringB);
             fprintf(errorFile, "ERROR on line %i, expecting %s but got %s\n",N->line_num, tempErrorString.c_str(),tempErrorStringB.c_str());
         }
             
-        //TODO type must equal argument
-        // TODO const expressions are allowed
+        if(N->declaration.is_const && !(N->declaration.expression->constantValue))        // TODO const expressions are allowed, variables are not
+            fprintf(errorFile, "ERROR on line %i, cannot assign a variable value to a const variable\n",N->line_num);
+
+       varTypeToText(N->type.var_type, tempErrorString);
+
         //TODO variable must not have been declared before in current scope
         //set variable type for checking stuff later
         // add to variable table

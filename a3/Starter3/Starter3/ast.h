@@ -107,6 +107,9 @@ enum literal_type
 
 };
 
+void varTypeToText(Var_type var_type, std::string &result);
+
+
 struct node_
 {
 

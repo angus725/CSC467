@@ -266,7 +266,7 @@ static char *bopt_to_string(enum binary_opt opt)
     }
 }
 
-static char *type_to_str(enum Var_type type, int array_bound)
+static char *type_to_str(enum Var_type type, int array_bound)// function duplicate with varTypeToText
 {
     switch (type)
     {
