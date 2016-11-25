@@ -32,9 +32,14 @@ class SymbolCactus
     list<unordered_map<string, node *>> symbolsTable; // each node must be of type variable
     list<unordered_map<string, node *>>::iterator symbolTableIt;
 
+    node* preDefNodes = new node[13];
+
+
     SymbolCactus(const SymbolCactus &);            // disable copy-construction
     SymbolCactus &operator=(const SymbolCactus &); // disable assignment
 };
+
+
 
 // std::list<int> ast;
 

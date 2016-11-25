@@ -1,11 +1,13 @@
 
 #include "semantic.h"
 
-void pre_check(node* N);// does the actual checking
-void post_check(node* N); // does the actual checking
+void pre_check(node *N);  // does the actual checking
+void post_check(node *N); // does the actual checking
 
 static int semantic_fail = 0; // default to not-fail
-static int nestedIfCount = 0; 
+static int nestedIfCount = 0;
+
+Var_type getExpressionResult(node* N);// TODO, N must be expression
 
 int semantic_check(node *ast)
 {
@@ -17,13 +19,13 @@ int semantic_check(node *ast)
 
 void pre_check(node *N)
 {
-    switch (ast->kind)
+    switch (N->kind)
     {
     case SCOPE:
-    // TODO: do stuff to symbol table
+        symbolCactus->pushScope();
+        break;
     case IF_STATEMENT:
-    // TODO: increment nestedIfCount
-
+        nestedIfCount++;
     default:
         break;
     }
@@ -31,21 +33,32 @@ void pre_check(node *N)
 
 void post_check(node *N)
 {
+    std::string tempErrorString,tempErrorStringB;
+    if (N == nullptr)
+        return; //wtf am I doing with a NULL ptr
 
-
-    switch (ast->kind)
+    switch (N->kind)
     {
     case SCOPE:
-        // TODO: do stuff to symbol table
+        symbolCactus->popScope();
         break;
     case MULTI_NODE:
-        // TODO: check and fill last_var_result_type to the struct multi_node definition
+    // Don't do anything, let the functions that can traverse multi-nodes do the work
+        // NO NEED: check and fill last_var_result_type to the struct multi_node definition
         break;
     case DECLARATION:
+        // if( N->type.var_type != getExpressionResult(N))
+        // {
+        //     varTypeToText(N->type.var_type, tempErrorString);
+        //     varTypeToText(getExpressionResult(N), tempErrorStringB);
+        //     fprintf(errorFile, "ERROR on line %i, expecting %s but got %s\n",N->line_num, tempErrorString.c_str(),tempErrorStringB.c_str());
+        // }
+            
         //TODO type must equal argument
         // TODO const expressions are allowed
         //TODO variable must not have been declared before in current scope
-        // set variable type for checking stuff later
+        //set variable type for checking stuff later
+        // add to variable table
         break;
     case ASSIGN_STATEMENT:
         // TODO match operators
@@ -56,7 +69,7 @@ void post_check(node *N)
         break;
     case IF_STATEMENT:
         //TODO check if bool is used
-        // TODO: decrement nestedIfCount
+        nestedIfCount--;
         break;
     case TYPE:
         break;
@@ -87,7 +100,7 @@ void post_check(node *N)
     case LITERAL_EXP:
         break;
     case VARIABLE:
-        // 
+        //
         // TODO check bounds on array_index
         // TODO assign array element type to var_type
         break;
