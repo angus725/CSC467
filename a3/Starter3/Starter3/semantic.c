@@ -7,7 +7,7 @@ void post_check(node *N); // does the actual checking
 static int semantic_fail = 0; // default to not-fail
 static int nestedIfCount = 0;
 
-Var_type getExpressionResult(node* N)
+Var_type getExpressionResult(node *N)
 {
     //inputs: N must be an "EXPRESSION"
     // all nodes below N has already been traversed by semantic check
@@ -40,7 +40,8 @@ void pre_check(node *N)
 
 void post_check(node *N)
 {
-    std::string tempErrorString,tempErrorStringB;
+    node *temp;
+    std::string tempErrorString, tempErrorStringB;
     if (N == nullptr)
         return; //wtf am I doing with a NULL ptr
 
@@ -50,23 +51,29 @@ void post_check(node *N)
         symbolCactus->popScope();
         break;
     case MULTI_NODE:
-    // Don't do anything, let the functions that can traverse multi-nodes do the work
+        // Don't do anything, let the functions that can traverse multi-nodes do the work
         // NO NEED: check and fill last_var_result_type to the struct multi_node definition
         break;
     case DECLARATION:
-        if( N->type.var_type != getExpressionResult(N->declaration.expression)) // type must equal argument
+        if (N->type.var_type != getExpressionResult(N->declaration.expression)) // type must equal argument
         {
             varTypeToText(N->type.var_type, tempErrorString);
             varTypeToText(getExpressionResult(N), tempErrorStringB);
-            fprintf(errorFile, "ERROR on line %i, expecting %s but got %s\n",N->line_num, tempErrorString.c_str(),tempErrorStringB.c_str());
+            fprintf(errorFile, "ERROR on line %i, expecting %s but got %s\n", N->line_num, tempErrorString.c_str(), tempErrorStringB.c_str());
         }
-            
-        if(N->declaration.is_const && !(N->declaration.expression->constantValue))        // TODO const expressions are allowed, variables are not
-            fprintf(errorFile, "ERROR on line %i, cannot assign a variable value to a const variable\n",N->line_num);
 
-       varTypeToText(N->type.var_type, tempErrorString);
+        if (N->declaration.is_const && !(N->declaration.expression->constantValue)) // const expressions are allowed, variables are not
+            fprintf(errorFile, "ERROR on line %i, cannot assign a variable value to a const variable\n", N->line_num);
 
-        //TODO variable must not have been declared before in current scope
+        temp = symbolCactus->find(N->declaration.identifier);
+        if (temp) // variable must not have been declared before in current scope
+            fprintf(errorFile, "ERROR on line %i, variable %s already exists, previously defined on line %i\n", N->line_num, N->declaration.identifier, temp->line_num);
+
+        if (N->declaration.is_const)
+            N->constantValue = 1;
+        // N->attribute = INITIALIZED;
+        // N-> = N->type.var_type;
+
         //set variable type for checking stuff later
         // add to variable table
         break;
