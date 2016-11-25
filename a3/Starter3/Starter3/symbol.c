@@ -4,88 +4,75 @@ using namespace std;
 
 std::unique_ptr<SymbolCactus> symbolCactus(new SymbolCactus);
 
+Symbol::Symbol()
+{
+  var_type = NONE;
+  attribute = 0;
+  line_num = 0;
+  name = "";
+  isConstant = 0;
+  index_size = 0;
+}
 
 SymbolCactus::SymbolCactus()
 {
     symbolTableIt = symbolsTable.begin();
 
-    preDefNodes[0].kind = VARIABLE;
-    preDefNodes[0].line_num = 0;
-    preDefNodes[0].constantValue = 0;
-    preDefNodes[0].variable = {"gl_FragColor", 0, 1, RESULT, TYPE_VEC4};
-    insert(&(preDefNodes[0]));
+    Symbol preDefNodes; // abusing the fact that insert uses the copy constuctor
 
-    preDefNodes[1].kind = VARIABLE;
-    preDefNodes[1].line_num = 0;
-    preDefNodes[1].constantValue = 0;
-    preDefNodes[1].variable = {"gl_FragCoord", 0, 1, RESULT, TYPE_VEC4};
-    insert(&(preDefNodes[1]));
+    preDefNodes.var_type = TYPE_VEC4;
+    preDefNodes.line_num = 0;
+    preDefNodes.isConstant = 0;
+    preDefNodes.name = "gl_FragColor";
+    preDefNodes.index_size = 4;
+    preDefNodes.attribute = RESULT;
+    insert(preDefNodes);
 
-    preDefNodes[2].kind = VARIABLE;
-    preDefNodes[2].line_num = 0;
-    preDefNodes[2].constantValue = 0;
-    preDefNodes[2].variable = {"gl_FragDepth", 0, 0, RESULT, TYPE_BOOL};
-    insert(&(preDefNodes[2]));
+    preDefNodes.name = "gl_FragCoord";
+    insert(preDefNodes);
 
-    preDefNodes[3].kind = VARIABLE;
-    preDefNodes[3].line_num = 0;
-    preDefNodes[3].constantValue = 0;
-    preDefNodes[3].variable = {"gl_TexCoord", 0, 1, ATTRIBUTE | INITIALIZED, TYPE_VEC4};
-    insert(&(preDefNodes[3]));
+    preDefNodes.var_type = TYPE_BOOL;
+    preDefNodes.name = "gl_FragDepth";
+    preDefNodes.index_size = 0;
+    insert(preDefNodes);
 
-    preDefNodes[4].kind = VARIABLE;
-    preDefNodes[4].line_num = 0;
-    preDefNodes[4].constantValue = 0;
-    preDefNodes[4].variable = {"gl_Color", 0, 1, ATTRIBUTE | INITIALIZED, TYPE_VEC4};
-    insert(&(preDefNodes[4]));
+    preDefNodes.var_type = TYPE_VEC4;
+    preDefNodes.name = "gl_TexCoord";
+    preDefNodes.index_size = 4;
+    preDefNodes.attribute = ATTRIBUTE | INITIALIZED;
+    insert(preDefNodes);
 
-    preDefNodes[5].kind = VARIABLE;
-    preDefNodes[5].line_num = 0;
-    preDefNodes[5].constantValue = 0;
-    preDefNodes[5].variable = {"gl_Secondary", 0, 1, ATTRIBUTE | INITIALIZED, TYPE_VEC4};
-    insert(&(preDefNodes[5]));
+    preDefNodes.name = "gl_Color";
+    insert(preDefNodes);
 
-    preDefNodes[6].kind = VARIABLE;
-    preDefNodes[6].line_num = 0;
-    preDefNodes[6].constantValue = 0;
-    preDefNodes[6].variable = {"gl_FogFragCoord", 0, 1, ATTRIBUTE | INITIALIZED, TYPE_VEC4};
-    insert(&(preDefNodes[6]));
+    preDefNodes.name = "gl_Secondary";
 
-    preDefNodes[7].kind = VARIABLE;
-    preDefNodes[7].line_num = 0;
-    preDefNodes[7].constantValue = 1;
-    preDefNodes[7].variable = {"gl_Light_Half", 0, 1, UNIFORM | INITIALIZED, TYPE_VEC4};
-    insert(&(preDefNodes[7]));
+    insert(preDefNodes);
 
-    preDefNodes[8].kind = VARIABLE;
-    preDefNodes[8].line_num = 0;
-    preDefNodes[8].constantValue = 1;
-    preDefNodes[8].variable = {"gl_Light_Ambient", 0, 1, UNIFORM | INITIALIZED, TYPE_VEC4};
-    insert(&(preDefNodes[8]));
+    preDefNodes.name = "gl_FogFragCoord";
+    insert(preDefNodes);
 
-    preDefNodes[9].kind = VARIABLE;
-    preDefNodes[9].line_num = 0;
-    preDefNodes[9].constantValue = 1;
-    preDefNodes[9].variable = {"gl_Material_Shininess", 0, 1, UNIFORM | INITIALIZED, TYPE_VEC4};
-    insert(&(preDefNodes[9]));
+    preDefNodes.var_type = TYPE_VEC4;
+    preDefNodes.isConstant = 1;
+    preDefNodes.name = "gl_Light_Half";
+    preDefNodes.index_size = 4;
+    preDefNodes.attribute = UNIFORM | INITIALIZED;
+    insert(preDefNodes);
 
-    preDefNodes[10].kind = VARIABLE;
-    preDefNodes[10].line_num = 0;
-    preDefNodes[10].constantValue = 1;
-    preDefNodes[10].variable = {"env1", 0, 1, UNIFORM | INITIALIZED, TYPE_VEC4};
-    insert(&(preDefNodes[10]));
+    preDefNodes.name = "gl_Light_Ambient";
+    insert(preDefNodes);
 
-    preDefNodes[11].kind = VARIABLE;
-    preDefNodes[11].line_num = 0;
-    preDefNodes[11].constantValue = 1;
-    preDefNodes[11].variable = {"env2", 0, 1, UNIFORM | INITIALIZED, TYPE_VEC4};
-    insert(&(preDefNodes[11]));
+    preDefNodes.name = "gl_Material_Shininess";
+    insert(preDefNodes);
 
-    preDefNodes[12].kind = VARIABLE;
-    preDefNodes[12].line_num = 0;
-    preDefNodes[12].constantValue = 1;
-    preDefNodes[12].variable = {"env3", 0, 1, UNIFORM | INITIALIZED, TYPE_VEC4};
-    insert(&(preDefNodes[12]));
+    preDefNodes.name = "env1";
+    insert(preDefNodes);
+
+    preDefNodes.name = "env2";
+    insert(preDefNodes);
+
+    preDefNodes.name = "env3";
+    insert(preDefNodes);
 
     pushScope(); // move from super-global scope to global scope
 }
@@ -101,39 +88,36 @@ SymbolCactus::~SymbolCactus()
 #define ERROR_NOT_A_VARIABLE -2
 #define ERROR_SCOPE_FAILURE -3
 
-int SymbolCactus::insert(node *N)
+int SymbolCactus::insert(Symbol &symbol)
 {
-    if (N->kind != VARIABLE)
-        return ERROR_NOT_A_VARIABLE;
-    std::string sIdentifier(N->variable.identifier);
 
     if (symbolTableIt == symbolsTable.end())
         return ERROR_SCOPE_FAILURE;
 
-    unordered_map<string, node *> *localSymbolTable = &(*symbolTableIt);
+    unordered_map<string, Symbol> *localSymbolTable = &(*symbolTableIt);
 
-    auto findResult = localSymbolTable->find(sIdentifier); // find returns a std::pair with strange syntax
+    auto findResult = localSymbolTable->find(symbol.name); // find returns a std::pair with strange syntax
     if (findResult != localSymbolTable->end())             // duplicate found
         return ERROR_DUPLICATE_VARIABLE;
 
-    localSymbolTable->insert({sIdentifier, N});
+    localSymbolTable->insert({symbol.name, symbol});
     return SUCCESS;
 }
 
-node *SymbolCactus::find(const char *ID)
+Symbol* SymbolCactus::find(const char *ID)
 {
     std::string sIdentifier(ID);
     return find(sIdentifier);
 }
-node *SymbolCactus::find(std::string ID)
+Symbol* SymbolCactus::find(std::string ID)
 {
-    list<unordered_map<string, node *>>::reverse_iterator symbolTableReIt = symbolsTable.rbegin(); // reverse iterator
+    list<unordered_map<string, Symbol>>::reverse_iterator symbolTableReIt = symbolsTable.rbegin(); // reverse iterator
     while (symbolTableReIt != symbolsTable.rend())
     {
         auto search = symbolTableIt->find(ID);
 
         if (search != symbolTableIt->end()) // found
-            return search->second;          // search is a std::pair< key, value>, where value is node*
+            return &(search->second);          // search is a std::pair< key, value>, where value is Symbol*
 
         symbolTableReIt++; // this should move the iterator backwards towards the head..
     }
@@ -146,7 +130,7 @@ void SymbolCactus::pushScope()
     symbolTableIt++;
     if (symbolTableIt == symbolsTable.end())
     {
-        std::unordered_map<std::string, node *> newTable;
+        std::unordered_map<std::string, Symbol> newTable;
         symbolsTable.push_back(newTable);
         assert(symbolTableIt == symbolsTable.end()); // abort if the iterator is pointing to the end after a pushback
     }

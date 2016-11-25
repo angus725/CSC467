@@ -21,11 +21,6 @@ struct node_;
 typedef struct node_ node;
 extern node *ast;
 
-#define RESULT 0x1
-#define ATTRIBUTE 0x2
-#define UNIFORM 0x4
-#define INITIALIZED 0x8
-
 typedef enum {
     UNKNOWN,
     SCOPE,
@@ -108,7 +103,6 @@ enum literal_type
 };
 
 void varTypeToText(Var_type var_type, std::string &result);
-
 
 struct node_
 {
@@ -205,7 +199,6 @@ struct node_
 	    char *identifier;
 	    int array_index; // ie, the 4 in vec4 vector[4]
 	    int has_index;
-	    int8_t attribute;       //Need to be filled from sematic analysis
 	    enum Var_type var_type; //Need to be filled from sematic analysis
 	} variable;
     };

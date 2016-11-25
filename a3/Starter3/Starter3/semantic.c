@@ -41,6 +41,8 @@ void pre_check(node *N)
 void post_check(node *N)
 {
     node *temp;
+    Symbol tempSymbol;
+    Symbol* pTempSymbol;
     std::string tempErrorString, tempErrorStringB;
     if (N == nullptr)
         return; //wtf am I doing with a NULL ptr
@@ -65,12 +67,13 @@ void post_check(node *N)
         if (N->declaration.is_const && !(N->declaration.expression->constantValue)) // const expressions are allowed, variables are not
             fprintf(errorFile, "ERROR on line %i, cannot assign a variable value to a const variable\n", N->line_num);
 
-        temp = symbolCactus->find(N->declaration.identifier);
-        if (temp) // variable must not have been declared before in current scope
-            fprintf(errorFile, "ERROR on line %i, variable %s already exists, previously defined on line %i\n", N->line_num, N->declaration.identifier, temp->line_num);
+        pTempSymbol = symbolCactus->find(N->declaration.identifier);
+        if (pTempSymbol) // variable must not have been declared before in current scope
+            fprintf(errorFile, "ERROR on line %i, variable %s already exists, previously defined on line %i\n", N->line_num, N->declaration.identifier, pTempSymbol->line_num);
 
         if (N->declaration.is_const)
             N->constantValue = 1;
+        // temp = new node
         // N->attribute = INITIALIZED;
         // N-> = N->type.var_type;
 
