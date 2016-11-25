@@ -47,18 +47,20 @@ enum Var_type
     TYPE_INT,
     TYPE_BOOL,
     TYPE_FLOAT,
-    TYPE_VEC2,
-    TYPE_VEC3,
-    TYPE_VEC4,
-    TYPE_VINT2,
-    TYPE_VINT3,
-    TYPE_VINT4,
-    TYPE_VBOOL2,
-    TYPE_VBOOL3,
-    TYPE_VBOOL4,
+    // TYPE_VEC2,
+    // TYPE_VEC3,
+    // TYPE_VEC4,
+    // TYPE_VINT2,
+    // TYPE_VINT3,
+    // TYPE_VINT4,
+    // TYPE_VBOOL2,
+    // TYPE_VBOOL3,
+    // TYPE_VBOOL4,
     TYPE_ANY, // for bypassing errors
 
-    INVALID = -1
+    INVALID = -1,
+    WRITE_ONLY = -2,
+    NOT_FOUND = -3,
 };
 
 enum func_type
@@ -187,6 +189,7 @@ struct node_
 	struct
 	{
 	    enum literal_type lit_type;
+	    enum Var_type var_type; // used by symantic checker "getExpressionResultType"
 	    union {
 		int val_bool;
 		int val_int;
@@ -197,8 +200,9 @@ struct node_
 	struct
 	{
 	    char *identifier;
-	    int array_index; // ie, the 4 in vec4 vector[4]
+	    int array_index; // ie, the second 4 in vec4 vector[4]
 	    int has_index;
+	    int array_bound;	//Need to be filled from sematic analysis
 	    enum Var_type var_type; //Need to be filled from sematic analysis
 	} variable;
     };
@@ -211,7 +215,7 @@ void ast_traversal(
     node *ast,
     void (*pre_order_func)(node *N),
     void (*post_order_func)(node *N));
-
-
+int is_expression(node_kind kind);
+char *type_to_str(enum Var_type type, int array_bound);
 
 #endif /* AST_H_ */

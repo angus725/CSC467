@@ -20,7 +20,7 @@ SymbolCactus::SymbolCactus()
 
     Symbol preDefNodes; // abusing the fact that insert uses the copy constuctor
 
-    preDefNodes.var_type = TYPE_VEC4;
+    preDefNodes.var_type = TYPE_FLOAT;
     preDefNodes.line_num = 0;
     preDefNodes.isConstant = 0;
     preDefNodes.name = "gl_FragColor";
@@ -36,7 +36,7 @@ SymbolCactus::SymbolCactus()
     preDefNodes.index_size = 0;
     insert(preDefNodes);
 
-    preDefNodes.var_type = TYPE_VEC4;
+    preDefNodes.var_type = TYPE_FLOAT;
     preDefNodes.name = "gl_TexCoord";
     preDefNodes.index_size = 4;
     preDefNodes.attribute = ATTRIBUTE | INITIALIZED;
@@ -52,7 +52,7 @@ SymbolCactus::SymbolCactus()
     preDefNodes.name = "gl_FogFragCoord";
     insert(preDefNodes);
 
-    preDefNodes.var_type = TYPE_VEC4;
+    preDefNodes.var_type = TYPE_FLOAT;
     preDefNodes.isConstant = 1;
     preDefNodes.name = "gl_Light_Half";
     preDefNodes.index_size = 4;
@@ -83,10 +83,7 @@ SymbolCactus::~SymbolCactus()
     //preDefNodes is automatically deallocated at end of runtime
 }
 
-#define SUCCESS 0
-#define ERROR_DUPLICATE_VARIABLE -1
-#define ERROR_NOT_A_VARIABLE -2
-#define ERROR_SCOPE_FAILURE -3
+
 
 int SymbolCactus::insert(Symbol &symbol)
 {

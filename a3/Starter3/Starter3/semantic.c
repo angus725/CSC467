@@ -1,19 +1,56 @@
-
 #include "semantic.h"
 
-void pre_check(node *N);  // does the actual checking
-void post_check(node *N); // does the actual checking
+// wtf did these comments and code come from?
+// if (getExpressionResultType(N->if_statement.if_confition) != TYPE_BOOL)
+//     d postck is being   read  from(node *N); // does the actual checking
 
-static int semantic_fail = 0; // default to not-fail
+static int semantic_fail = 0; // 0success, 1 fail
+
 static int nestedIfCount = 0;
 
-Var_type getExpressionResult(node *N)
+Var_type getExpressionResultType(node *N)
 {
     //inputs: N must be an "EXPRESSION"
     // all nodes below N has already been traversed by semantic check
-
     // outputs: return must be the type the expression N returns
-    return TYPE_ANY;
+    Symbol *pTempSymbol;
+
+    if (is_expression(N->kind))
+        return INVALID;
+
+    switch (N->kind)
+    {
+    case TYPE:
+        return N->type.var_type;
+
+    case LITERAL_EXP:
+        return N->literal_exp.var_type;
+
+    case MULTI_NODE:
+        if (getExpressionResultType(N->multi_node.nodes) == getExpressionResultType(N->multi_node.cur_node))
+            return getExpressionResultType(N->multi_node.cur_node);
+        else
+            return TYPE_ANY; // TODO logic to make this print something that makes sense
+
+    case VARIABLE:
+        pTempSymbol = symbolCactus->find(N->variable.identifier);
+        if (pTempSymbol)
+            return pTempSymbol->var_type;
+        return NOT_FOUND;
+
+    default:
+        return INVALID;
+    }
+    return INVALID;
+}
+
+int getExpressionResultArrayBound(node *N)
+{
+    //does the same as getExpressionResultType, but returns the ArrayBound instead of type
+    if (is_expression(ast->kind))
+        return -1;
+    // TODO
+    return 0;
 }
 
 int semantic_check(node *ast)
@@ -33,6 +70,7 @@ void pre_check(node *N)
         break;
     case IF_STATEMENT:
         nestedIfCount++;
+        break;
     default:
         break;
     }
@@ -42,8 +80,8 @@ void post_check(node *N)
 {
     node *temp;
     Symbol tempSymbol;
-    Symbol* pTempSymbol;
-    std::string tempErrorString, tempErrorStringB;
+    Symbol *pTempSymbol;
+    int intTemp; //used for complex return types
     if (N == nullptr)
         return; //wtf am I doing with a NULL ptr
 
@@ -57,38 +95,90 @@ void post_check(node *N)
         // NO NEED: check and fill last_var_result_type to the struct multi_node definition
         break;
     case DECLARATION:
-        if (N->type.var_type != getExpressionResult(N->declaration.expression)) // type must equal argument
+        // type must equal argument
+        if (N->type.var_type != getExpressionResultType(N->declaration.expression))
         {
-            varTypeToText(N->type.var_type, tempErrorString);
-            varTypeToText(getExpressionResult(N), tempErrorStringB);
-            fprintf(errorFile, "ERROR on line %i, expecting %s but got %s\n", N->line_num, tempErrorString.c_str(), tempErrorStringB.c_str());
+            fprintf(errorFile, "ERROR on line %i, expecting %s but got %s\n",
+                    N->declaration.type->line_num,
+                    type_to_str(N->declaration.type->type.var_type,
+                                N->declaration.type->type.array_bound),
+                    type_to_str(getExpressionResultType(N->declaration.expression),
+                                getExpressionResultArrayBound(N->declaration.expression)));
         }
 
-        if (N->declaration.is_const && !(N->declaration.expression->constantValue)) // const expressions are allowed, variables are not
+        // const expressions are allowed, variables are not
+        if (N->declaration.is_const && (N->declaration.expression != nullptr) && !(N->declaration.expression->constantValue))
             fprintf(errorFile, "ERROR on line %i, cannot assign a variable value to a const variable\n", N->line_num);
 
-        pTempSymbol = symbolCactus->find(N->declaration.identifier);
-        if (pTempSymbol) // variable must not have been declared before in current scope
-            fprintf(errorFile, "ERROR on line %i, variable %s already exists, previously defined on line %i\n", N->line_num, N->declaration.identifier, pTempSymbol->line_num);
-
+        //set the info for the new symbol
         if (N->declaration.is_const)
             N->constantValue = 1;
-        // temp = new node
-        // N->attribute = INITIALIZED;
-        // N-> = N->type.var_type;
+        tempSymbol.line_num = N->line_num;
+        tempSymbol.isConstant = N->constantValue;
+        tempSymbol.name = N->declaration.identifier;
+        tempSymbol.index_size = N->declaration.type->type.array_bound;
+        if (N->declaration.expression != nullptr)
+            tempSymbol.attribute = INITIALIZED;
 
-        //set variable type for checking stuff later
-        // add to variable table
+        intTemp = symbolCactus->insert(tempSymbol); // add to variable table
+
+        // variable must not have been declared before in current scope
+        if (intTemp == ERROR_DUPLICATE_VARIABLE)
+            fprintf(errorFile, "ERROR on line %i, variable %s already exists, previously defined on line %i\n", N->line_num, N->declaration.identifier, tempSymbol.line_num);
+        if (intTemp != 0)
+        {
+            fprintf(errorFile, "ERROR on line %i, variable %s is causing a symbolTable error, please investigate futher\n", N->line_num, N->declaration.identifier);
+        }
         break;
     case ASSIGN_STATEMENT:
-        // TODO match operators
-        // TODO match input variables/literal types - aka look up scope table
+        // make sure the variable has been declared
+        pTempSymbol = symbolCactus->find(N->assignment_statement.variable->variable.identifier);
+        if (pTempSymbol == nullptr)
+        {
+            fprintf(errorFile, "ERROR on line %i, variable %s was not been declared\n", N->line_num, N->assignment_statement.variable->variable.identifier);
+
+            tempSymbol.var_type = getExpressionResultType(N->assignment_statement.expression);
+            tempSymbol.line_num = N->assignment_statement.variable->line_num;
+            tempSymbol.isConstant = N->assignment_statement.expression->constantValue;
+            tempSymbol.name = N->assignment_statement.variable->variable.identifier;
+            tempSymbol.index_size = getExpressionResultArrayBound(N->assignment_statement.expression);
+            intTemp = symbolCactus->insert(tempSymbol); // add to variable table
+            if (intTemp != 0)
+            {
+                fprintf(errorFile, "Something horrible is happening, aborting.\n");
+                abort();
+            }
+        }
+
+        // match types of assigner and assignee
+        if (pTempSymbol->var_type != getExpressionResultType(N->assignment_statement.expression))
+        {
+            fprintf(errorFile, "ERROR on line %i, %s is type %s and cannot be assigned type %s\n",
+                    N->assignment_statement.variable->line_num,
+                    pTempSymbol->name.c_str(),
+                    type_to_str(pTempSymbol->var_type, pTempSymbol->index_size),
+                    type_to_str(getExpressionResultType(N->assignment_statement.expression), getExpressionResultArrayBound(N->assignment_statement.expression)));
+        }
+
         // consts cannot be assigned, only declared.
-        // make sure the variable exists
+        if (pTempSymbol->isConstant)
+            fprintf(errorFile, "ERROR on line %i, %s is a const and cannot be reassigned values\n", N->assignment_statement.variable->line_num, pTempSymbol->name.c_str());
+
+        if (pTempSymbol->attribute & (ATTRIBUTE | UNIFORM))
+            fprintf(errorFile, "ERROR on line %i, %s is a predefined value that cannot be written to\n", N->assignment_statement.variable->line_num, pTempSymbol->name.c_str());
+
         // check variable attributes ( see "Pre Defined Variables")
+        if (pTempSymbol->attribute & RESULT && nestedIfCount > 0)
+            fprintf(errorFile, "ERROR on line %i, %s is a predefined value that cannot be written to in the scope of an IF statement\n", N->assignment_statement.variable->line_num, pTempSymbol->name.c_str());
+
+        if (getExpressionResultType(N->assignment_statement.expression) == WRITE_ONLY)
+            fprintf(errorFile, "ERROR on line %i, a predefined value that is WRITE ONLY is being read from\n", N->assignment_statement.expression->line_num);
+
         break;
     case IF_STATEMENT:
-        //TODO check if bool is used
+        // check if bool is used
+        if (getExpressionResultType(N->if_statement.if_confition) != TYPE_BOOL)
+            fprintf(errorFile, "ERROR on line %i, branch statements must have an expression returning a bool\n", N->if_statement.if_confition->line_num);
         nestedIfCount--;
         break;
     case TYPE:
@@ -124,11 +214,10 @@ void post_check(node *N)
         // TODO check bounds on array_index
         // TODO assign array element type to var_type
         break;
+
     default:
         break;
     }
-
-    //if leaf node, simply return?
 
     // recursively traverse tree
 

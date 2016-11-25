@@ -40,6 +40,12 @@ private:
 };
 
 
+// insert() returns
+#define SUCCESS 0
+#define ERROR_DUPLICATE_VARIABLE -1
+#define ERROR_NOT_A_VARIABLE -2
+#define ERROR_SCOPE_FAILURE -3
+
 
 class SymbolCactus
 {

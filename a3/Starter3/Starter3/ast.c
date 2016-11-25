@@ -11,57 +11,6 @@
 
 node *ast = NULL;
 
-void varTypeToText(Var_type var_type, std::string &result)
-{
-    switch (var_type)
-    {
-    case TYPE_INT:
-        result = "int";
-        break;
-    case TYPE_BOOL:
-        result = "bool";
-        break;
-    case TYPE_FLOAT:
-        result = "float";
-        break;
-    case TYPE_VEC2:
-        result = "vec2";
-        break;
-    case TYPE_VEC3:
-        result = "vec3";
-        break;
-    case TYPE_VEC4:
-        result = "vec4";
-        break;
-    case TYPE_VINT2:
-        result = "ivec2";
-        break;
-    case TYPE_VINT3:
-        result = "ivec3";
-        break;
-    case TYPE_VINT4:
-        result = "ivec4";
-        break;
-    case TYPE_VBOOL2:
-        result = "bvec2";
-        break;
-    case TYPE_VBOOL3:
-        result = "bvec3";
-        break;
-    case TYPE_VBOOL4:
-        result = "bvec4";
-        break;
-    case TYPE_ANY: // for bypassing errors
-        result = "?";
-        break;
-    case NONE:
-    case INVALID:
-    default:
-        result = "N/A";
-        break;
-    }
-}
-
 node *ast_allocate(node_kind kind, ...)
 {
     va_list args;
@@ -127,12 +76,15 @@ node *ast_allocate(node_kind kind, ...)
         {
         case LIT_BOOL:
             ast->literal_exp.val_bool = va_arg(args, int);
+            ast->literal_exp.var_type = TYPE_BOOL;
             break;
         case LIT_INT:
             ast->literal_exp.val_int = va_arg(args, int);
+            ast->literal_exp.var_type = TYPE_INT;
             break;
         case LIT_FLOAT:
             ast->literal_exp.val_float = va_arg(args, double);
+            ast->literal_exp.var_type = TYPE_FLOAT;
             break;
         default:
             break;
@@ -266,7 +218,7 @@ static char *bopt_to_string(enum binary_opt opt)
     }
 }
 
-static char *type_to_str(enum Var_type type, int array_bound)// function duplicate with varTypeToText
+char *type_to_str(enum Var_type type, int array_bound) // function duplicate with varTypeToText
 {
     switch (type)
     {
@@ -307,7 +259,7 @@ static char *func_to_str(enum func_type type)
 
 static void print_node_pre(node *ast)
 {
-    std::string temp;
+    // std::string temp;
     switch (ast->kind)
     {
     case SCOPE:
@@ -369,22 +321,22 @@ static void print_node_pre(node *ast)
         }
         break;
     case VARIABLE:
-        varTypeToText(ast->variable.var_type, temp);
+        // varTypeToText(ast->variable.var_type, temp);
         if (ast->variable.has_index)
         {
 
-            printf("(INDEX %s %s %d ", temp.c_str(),
+            printf("(INDEX %s %s %d ", type_to_str(ast->variable.var_type, ast->variable.array_bound),
                    ast->variable.identifier, ast->variable.array_index);
         }
         else
-            printf("%s %s ", temp.c_str(), ast->variable.identifier);
+            printf("%s %s ", type_to_str(ast->variable.var_type, ast->variable.array_bound), ast->variable.identifier);
         break;
     default:
         break;
     }
 }
 
-static int is_expression(node_kind kind)
+int is_expression(node_kind kind)
 {
     if (kind > EXPRESSION_START && kind < EXPRESSION_END)
         return 1;
