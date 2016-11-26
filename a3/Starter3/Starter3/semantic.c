@@ -48,7 +48,7 @@ enum data_type getExpressionResultType(node *N)
     //inputs: N must be an "EXPRESSION"
     // all nodes below N has already been traversed by semantic check
     // outputs: return must be the type the expression N returns
-    Symbol *pTempSymbol;
+//    Symbol *pTempSymbol;
 
     if (!is_expression(N->kind))
         return TYPE_INVALID;
@@ -56,12 +56,7 @@ enum data_type getExpressionResultType(node *N)
     switch (N->kind)
     {
     case VARIABLE:
-        pTempSymbol = symbolCactus->find(N->variable.identifier);
-        if (pTempSymbol)
-            return pTempSymbol->var_type;
-        return TYPE_UNKNOWN;
-
-
+        return N->variable.var_type;
     case FUNC_CALL_EXP:
     	return N->func_call_exp.result_type;
     case CONSTRUCTOR_EXP:
@@ -237,7 +232,7 @@ void post_check(node *N)
         break;
     case IF_STATEMENT:
         // check if bool is used
-        if (var_type_to_base(getExpressionResultType(N->if_statement.if_confition)) != TYPE_BOOL)
+        if (getExpressionResultType(N->if_statement.if_confition) != TYPE_BOOL)
             SEMANTIC_ERROR("ERROR on line %i, branch statements must have an expression returning a bool\n", N->if_statement.if_confition->line_num);
         nestedIfCount--;
         break;
@@ -434,6 +429,7 @@ void post_check(node *N)
         	if (isScalar(N->variable.var_type) || N->variable.array_index > get_array_bound_from_type(N->variable.var_type)) {
         		SEMANTIC_ERROR("ERROR on line %i, array index out of bound\n", N->line_num)
         	}
+        N->variable.var_type = var_type_to_base(N->variable.var_type);
         }
         // TODO check bounds on array_index
         // TODO assign array element type to var_type
