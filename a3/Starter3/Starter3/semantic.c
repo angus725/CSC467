@@ -237,7 +237,7 @@ void post_check(node *N)
         break;
     case IF_STATEMENT:
         // check if bool is used
-        if (getExpressionResultType(N->if_statement.if_confition) != TYPE_BOOL)
+        if (var_type_to_base(getExpressionResultType(N->if_statement.if_confition)) != TYPE_BOOL)
             SEMANTIC_ERROR("ERROR on line %i, branch statements must have an expression returning a bool\n", N->if_statement.if_confition->line_num);
         nestedIfCount--;
         break;
