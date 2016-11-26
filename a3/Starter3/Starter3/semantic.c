@@ -1,7 +1,7 @@
 #include "semantic.h"
 
 
-#define SEMANTIC_ERROR(...) fprintf(errorFile,  __VA_ARGS__); semantic_fail = 1;
+#define SEMANTIC_ERROR(...) {fprintf(errorFile,  __VA_ARGS__); semantic_fail = 1;}
 
 static int semantic_fail = 0; // 0success, 1 fail
 
@@ -226,7 +226,7 @@ void post_check(node *N)
         if (pTempSymbol->attribute & RESULT && nestedIfCount > 0)
             SEMANTIC_ERROR("ERROR on line %i, %s is a predefined value that cannot be written to in the scope of an IF statement\n", N->assignment_statement.variable->line_num, pTempSymbol->name.c_str());
 
-        if (getExpressionResultType(N->assignment_statement.expression) == WRITE_ONLY)
+        if (isWriteOnly(N->assignment_statement.expression))
             SEMANTIC_ERROR("ERROR on line %i, a predefined value that is WRITE ONLY is being read from\n", N->assignment_statement.expression->line_num);
 
         break;

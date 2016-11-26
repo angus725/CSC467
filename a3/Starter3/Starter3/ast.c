@@ -382,8 +382,7 @@ int is_expression(node_kind kind)
 }
 static void print_node_post(node *ast)
 {
-    if (is_expression(ast->kind))
-        return;
+
     switch (ast->kind)
     {
     case TYPE:
