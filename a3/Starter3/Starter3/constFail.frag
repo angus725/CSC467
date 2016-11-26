@@ -1,11 +1,11 @@
 {
 	int var_int = 1;
-	const int var_in2 = 2;	
+	int var_in2 = 2;	
 float var_float = 2.5;
 	bool var_bool = true;
 	
 	vec4	var_vec4;
-	const ivec2 var_ivec2 = ivec2(2, 5);
+	ivec2 var_ivec2 = ivec2(var_int, 2);
 	vec3 var_vec3 = vec3( 1.1, 2.2, 3.3);
 	bvec4 var_bvec4 = bvec4(true, false, true, false);
 	

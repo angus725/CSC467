@@ -180,8 +180,13 @@ void ast_traversal(
     if (post_order_func)
         post_order_func(ast);
 }
+
+static void free_node(node* N) {
+	free(N);
+}
 void ast_free(node *ast)
 {
+	ast_traversal(ast, NULL, free_node);
 }
 
 static char *uopt_to_string(enum unary_opt opt)
@@ -405,4 +410,6 @@ static void print_node_post(node *ast)
 void ast_print(node *ast)
 {
     ast_traversal(ast, print_node_pre, print_node_post);
+    printf("\n");
+
 }

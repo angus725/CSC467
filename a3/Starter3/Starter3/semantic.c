@@ -81,7 +81,7 @@ static enum data_type get_func_result_type(node* N)
 	case FUNC_DP3:
 		return  var_type_to_base(getExpressionResultType(N->func_call_exp.args_opt->multi_node.cur_node));
 	case FUNC_RSQ:
-		return getExpressionResultType(N->func_call_exp.args_opt->multi_node.cur_node);
+		return TYPE_FLOAT;
 	default:
 		break;
 	}
@@ -103,7 +103,7 @@ int count_nodes(node *multi_node)
 	if (multi_node->kind != MULTI_NODE)
 		return 1;
 	else {
-		return count_nodes(multi_node->multi_node.nodes) +count_nodes(multi_node->multi_node.cur_node);
+		return count_nodes(multi_node->multi_node.nodes) + count_nodes(multi_node->multi_node.cur_node);
 	}
 }
 
@@ -147,6 +147,8 @@ void post_check(node *N)
         symbolCactus->popScope();
         break;
     case MULTI_NODE:
+    	if(N->multi_node.cur_node->constantValue && N->multi_node.nodes->constantValue )
+    		N->constantValue = 1;
         // Don't do anything, let the functions that can traverse multi-nodes do the work
         // NO NEED: check and fill last_var_result_type to the struct multi_node definition
         break;
@@ -180,9 +182,9 @@ void post_check(node *N)
         // variable must not have been declared before in current scope
         if (intTemp == ERROR_DUPLICATE_VARIABLE)
             SEMANTIC_ERROR("ERROR on line %i, variable %s already exists, previously defined on line %i\n", N->line_num, N->declaration.identifier, tempSymbol.line_num);
-        if (intTemp != 0)
+        if (intTemp != 0 && intTemp != ERROR_DUPLICATE_VARIABLE)
         {
-            SEMANTIC_ERROR("ERROR on line %i, variable %s is causing a symbolTable error, please investigate futher\n", N->line_num, N->declaration.identifier);
+            SEMANTIC_ERROR("ERROR on line %i, variable %s is causing an unexpected symbolTable error, please investigate further\n", N->line_num, N->declaration.identifier);
         }
 //        std::cout << *symbolCactus << std::endl;
         break;
@@ -242,15 +244,16 @@ void post_check(node *N)
     	N->func_call_exp.result_type = get_func_result_type(N);
     	switch(N->func_call_exp.func) {
     	case FUNC_LIT:
-    		if (count_nodes(N) != 1)
+    		if (count_nodes(N->func_call_exp.args_opt) != 1)
                 SEMANTIC_ERROR("ERROR on line %i, wrong number of arguments to function lit\n", N->line_num);
     		if (getExpressionResultType(N->func_call_exp.args_opt) != TYPE_VEC4) {
     			SEMANTIC_ERROR("ERROR on line %i, wrong type of argument to function lit, expecting vec4\n", N->line_num);
     		}
     		break;
     	case FUNC_DP3:
-    		if (count_nodes(N) != 2)
-                SEMANTIC_ERROR("ERROR on line %i, wrong number of arguments to function lit\n", N->line_num);
+//    		std::cout << count_nodes(N);
+    		if (count_nodes(N->func_call_exp.args_opt) != 2)
+                SEMANTIC_ERROR("ERROR on line %i, wrong number of arguments to function dp3\n", N->line_num);
 
     		if (getExpressionResultType(N->func_call_exp.args_opt->multi_node.cur_node) ==
     				getExpressionResultType(N->func_call_exp.args_opt->multi_node.nodes)) {
@@ -258,10 +261,12 @@ void post_check(node *N)
 
     			if (type != TYPE_VEC3 && type != TYPE_VEC4 && type != TYPE_IVEC3 && type!= TYPE_IVEC4)
     				SEMANTIC_ERROR("ERROR on line %i, wrong type of argument to function dp3\n", N->line_num);
+    		} else {
+    			SEMANTIC_ERROR("ERROR on line %i, wrong type of argument to function dp3\n", N->line_num);
     		}
     		break;
     	case FUNC_RSQ:
-    		if (count_nodes(N) != 1)
+    		if (count_nodes(N->func_call_exp.args_opt) != 1)
                 SEMANTIC_ERROR("ERROR on line %i, wrong number of arguments to function rsq\n", N->line_num);
 			type = getExpressionResultType(N->func_call_exp.args_opt);
     		if (type != TYPE_INT && type != TYPE_FLOAT)
@@ -287,6 +292,8 @@ void post_check(node *N)
 
 		if(isWriteOnly(N))
 				SEMANTIC_ERROR("ERROR on line %i, argument to constructor is write only\n", N->line_num);
+		if(N->constructor_exp.args_opt->constantValue)
+			N->constantValue = 1;
 
         break;
     case UNARY_EXP:
@@ -364,9 +371,9 @@ void post_check(node *N)
 				case    BOPT_MUL:
 					if(resultTypeA==resultTypeB)
 						N->binary_exp.result_type = resultTypeA;
-					else if(isScalar(resultTypeB))
+					else if(isScalar(resultTypeB) && var_type_to_base(resultTypeA) == resultTypeB)
 						N->binary_exp.result_type = resultTypeA;
-					else if(isScalar(resultTypeA))
+					else if(isScalar(resultTypeA)&& var_type_to_base(resultTypeB) == resultTypeA)
 						N->binary_exp.result_type = resultTypeB;
 					else
 					{
@@ -412,9 +419,12 @@ void post_check(node *N)
     	        // match table with operators
     	        // figure out resullt_type
     	        // check variable attributes ( see "Pre Defined Variables")
+		if(N->binary_exp.operand1 && N->binary_exp.operand2)
+				N->constantValue = 1;
     	}
         break;
     case LITERAL_EXP:
+    	N->constantValue = 1;
         break;
     case VARIABLE:
         pTempSymbol = symbolCactus->find(N->variable.identifier);
