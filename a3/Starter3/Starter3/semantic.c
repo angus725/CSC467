@@ -15,7 +15,7 @@ int isWriteOnly(node* N)
 		return 0; // false
 	if(N->kind == VARIABLE )
 	{
-	    Symbol *pTempSymbol = symbolCactus->find(N->assignment_statement.variable->variable.identifier);
+	    Symbol *pTempSymbol = symbolCactus->find(N->variable.identifier);
 	    if(pTempSymbol)
 	    	return (pTempSymbol->attribute & WRITE_ONLY);
 	    else
@@ -188,6 +188,7 @@ void post_check(node *N)
         {
             SEMANTIC_ERROR("ERROR on line %i, variable %s is causing a symbolTable error, please investigate futher\n", N->line_num, N->declaration.identifier);
         }
+        std::cout << *symbolCactus << std::endl;
         break;
     case ASSIGN_STATEMENT:
         // make sure the variable has been declared
@@ -281,11 +282,11 @@ void post_check(node *N)
     	array_len = N->constructor_exp.type->type.var_type - var_type_to_base(N->constructor_exp.type->type.var_type) + 1;
     	if (array_len != count_nodes(N->constructor_exp.args_opt))
     		SEMANTIC_ERROR("ERROR on line %i, wrong number of arguments to constructor, expecting %d\n", N->line_num, array_len);
-    	for (cur_node = N; cur_node->kind == MULTI_NODE; cur_node = cur_node->multi_node.nodes) {
-    		if (getExpressionResultType(cur_node->multi_node.cur_node) != N->constructor_exp.type->type.var_type)
+    	for (cur_node = N->constructor_exp.args_opt; cur_node->kind == MULTI_NODE; cur_node = cur_node->multi_node.nodes) {
+    		if (getExpressionResultType(cur_node->multi_node.cur_node) != var_type_to_base(N->constructor_exp.type->type.var_type))
     			SEMANTIC_ERROR("ERROR on line %i, wrong type of arguments to constructor, expecting %s\n", N->line_num, type_to_str(N->constructor_exp.type->type.var_type))
     	}
-		if (getExpressionResultType(cur_node))
+		if (getExpressionResultType(cur_node) != var_type_to_base(N->constructor_exp.type->type.var_type))
 				SEMANTIC_ERROR("ERROR on line %i, wrong type of arguments to constructor, expecting %s\n", N->line_num, type_to_str(N->constructor_exp.type->type.var_type))
 
 		if(isWriteOnly(N))
@@ -337,7 +338,7 @@ void post_check(node *N)
 					else
 					{
 		    			SEMANTIC_ERROR("ERROR on line %i, wrong type passed to binary operator\n", N->line_num )
-						N->unary_exp.result_type = TYPE_ANY;
+						N->binary_exp.result_type = TYPE_ANY;
 					}
 					break;
 					//comparison scalar only
@@ -350,7 +351,7 @@ void post_check(node *N)
 					else
 					{
 		    			SEMANTIC_ERROR("ERROR on line %i, wrong type passed to binary operator\n", N->line_num )
-						N->unary_exp.result_type = TYPE_ANY;
+						N->binary_exp.result_type = TYPE_ANY;
 					}
 					break;
 				case    BOPT_EQ:
@@ -360,7 +361,7 @@ void post_check(node *N)
 					else
 					{
 		    			SEMANTIC_ERROR("ERROR on line %i, wrong type passed to binary operator\n", N->line_num )
-						N->unary_exp.result_type = TYPE_ANY;
+						N->binary_exp.result_type = TYPE_ANY;
 					}
 					break;
 					// arithmatic any
@@ -374,7 +375,7 @@ void post_check(node *N)
 					else
 					{
 						SEMANTIC_ERROR("ERROR on line %i, wrong type passed to binary operator\n", N->line_num )
-						N->unary_exp.result_type = TYPE_ANY;
+						N->binary_exp.result_type = TYPE_ANY;
 					}
 					break;
 					//arithmatic ss vv only
@@ -385,7 +386,7 @@ void post_check(node *N)
 					else
 					{
 		    			SEMANTIC_ERROR("ERROR on line %i, wrong type passed to binary operator\n", N->line_num )
-						N->unary_exp.result_type = TYPE_ANY;
+						N->binary_exp.result_type = TYPE_ANY;
 					}
 
 					//arithmatic scalar only
@@ -396,7 +397,7 @@ void post_check(node *N)
 					else
 					{
 		    			SEMANTIC_ERROR("ERROR on line %i, wrong type passed to binary operator\n", N->line_num )
-						N->unary_exp.result_type = TYPE_ANY;
+						N->binary_exp.result_type = TYPE_ANY;
 					}
 					break;
 				default:

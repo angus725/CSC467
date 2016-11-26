@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unordered_map>
+#include <iostream>
 #include <list>
 #include <iterator>
 #include <utility>
@@ -13,6 +14,7 @@
 #include <vector>
 #include "ast.h"
 #include <cassert>
+#include <bitset>
 
 using namespace std;
 
@@ -34,6 +36,7 @@ public:
   int line_num;
   std::string name;
   int isConstant;
+  friend ostream& operator<<(ostream& os, const Symbol& symbol);
 
 private:
 };
@@ -57,6 +60,7 @@ public:
   Symbol *find(std::string identifer);
   void pushScope();
   void popScope();
+  friend ostream& operator<<(ostream& os, const SymbolCactus& symbolCactus);
 
 private:
   list<unordered_map<string, Symbol>> symbolsTable; // each Symbol must be of type variable

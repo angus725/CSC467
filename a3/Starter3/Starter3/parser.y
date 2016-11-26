@@ -146,9 +146,9 @@ scope
   ;
 
 declarations
-  : declarations declaration
+  : declaration declarations
       { 
-      	$$ = ast_allocate(MULTI_NODE, yyline, $1, $2);
+      	$$ = ast_allocate(MULTI_NODE, yyline, $2, $1);
       	yTRACE("declarations -> declarations declaration\n") 
       }
   | 
