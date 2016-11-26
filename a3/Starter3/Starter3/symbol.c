@@ -152,11 +152,20 @@ Symbol* SymbolCactus::find(std::string identifer)
     list<unordered_map<string, Symbol>>::reverse_iterator symbolTableReIt = symbolsTable.rbegin(); // reverse iterator
     while (symbolTableReIt != symbolsTable.rend())
     {
-        auto search = (*symbolTableIt).find(identifer);
+//#define FAIL
+#ifdef FAIL
+    	for (auto itr = symbolTableReIt->begin(); itr != symbolTableReIt->end(); ++itr) {
+    	    	    /* ... process *itr ... */
+    				std::cout << itr->second;
+    	    	}
+#endif
+        auto search = (*symbolTableReIt).find(identifer);
 
-        if (search != (*symbolTableIt).end()) // found
+        if (search != (*symbolTableReIt).end()) // found
+        {
+//        	std::cout << "FOUND: " << search->second;
             return &(search->second);          // search is a std::pair< key, value>, where value is Symbol*
-
+        }
         symbolTableReIt++; // this should move the iterator backwards towards the head..
     }
 

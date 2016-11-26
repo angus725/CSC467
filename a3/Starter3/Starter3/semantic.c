@@ -188,7 +188,7 @@ void post_check(node *N)
         {
             SEMANTIC_ERROR("ERROR on line %i, variable %s is causing a symbolTable error, please investigate futher\n", N->line_num, N->declaration.identifier);
         }
-        std::cout << *symbolCactus << std::endl;
+//        std::cout << *symbolCactus << std::endl;
         break;
     case ASSIGN_STATEMENT:
         // make sure the variable has been declared
