@@ -176,6 +176,7 @@ void post_check(node *N)
         tempSymbol.line_num = N->line_num;
         tempSymbol.isConstant = N->constantValue;
         tempSymbol.name = N->declaration.identifier;
+        tempSymbol.var_type = N->declaration.type->type.var_type;
         if (N->declaration.expression != nullptr)
             tempSymbol.attribute = INITIALIZED;
 
