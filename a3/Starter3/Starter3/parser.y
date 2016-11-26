@@ -221,32 +221,71 @@ statement
 type
   : INT_T
       { 
-      	$$ = ast_allocate(TYPE, yyline, TYPE_INT, NULL);
+      	$$ = ast_allocate(TYPE, yyline, TYPE_INT);
       	yTRACE("type -> INT_T \n")
       }
   | IVEC_T
       {
-      	$$ = ast_allocate(TYPE, yyline, TYPE_INT, $1);
+      	enum data_type type = TYPE_UNKNOWN;
+      	switch($1) {
+      	case 1:
+      		type = TYPE_IVEC2;
+      		break;
+      	case 2:
+      		type = TYPE_IVEC3;
+      		break;
+      	case 3:
+      		type = TYPE_IVEC4;
+      		break;
+      	default: break;
+      	}
+      	$$ = ast_allocate(TYPE, yyline, type);
       	yTRACE("type -> IVEC_T \n") 
       }
   | BOOL_T
       { 
-      	$$ = ast_allocate(TYPE, yyline, TYPE_BOOL, NULL);
+      	$$ = ast_allocate(TYPE, yyline, TYPE_BOOL);
       	yTRACE("type -> BOOL_T \n") 
       }
   | BVEC_T
       { 
-      	$$ = ast_allocate(TYPE, yyline, TYPE_BOOL, $1);
+        enum data_type type = TYPE_UNKNOWN;
+      	switch($1) {
+      	case 1:
+      		type = TYPE_BVEC2;
+      		break;
+      	case 2:
+      		type = TYPE_BVEC3;
+      		break;
+      	case 3:
+      		type = TYPE_BVEC4;
+      		break;
+      	default: break;
+      	}
+      	$$ = ast_allocate(TYPE, yyline, type);
       	yTRACE("type -> BVEC_T \n") 
       }
   | FLOAT_T
       { 
-      	$$ = ast_allocate(TYPE, yyline, TYPE_FLOAT, NULL);
+      	$$ = ast_allocate(TYPE, yyline, TYPE_FLOAT);
       	yTRACE("type -> FLOAT_T \n") 
       }
   | VEC_T
-      { 
-      	$$ = ast_allocate(TYPE, yyline, TYPE_FLOAT, $1);
+      {
+        enum data_type type = TYPE_UNKNOWN;
+      	switch($1) {
+      	case 1:
+      		type = TYPE_VEC2;
+      		break;
+      	case 2:
+      		type = TYPE_VEC3;
+      		break;
+      	case 3:
+      		type = TYPE_VEC4;
+      		break;
+      	default: break;
+      	}
+      	$$ = ast_allocate(TYPE, yyline, type);
       	yTRACE("type -> VEC_T \n") 
       }
   ;
@@ -340,29 +379,29 @@ expression
       }
   | expression '^' expression %prec '^'
       {
-      	$$ = ast_allocate(BINARY_EXP, yyline, BOPT_XOR, $1, $3);
+      	$$ = ast_allocate(BINARY_EXP, yyline, BOPT_EXPO, $1, $3);
       	yTRACE("expression -> expression ^ expression \n") 
       }
 
   /* literals */
   | TRUE_C
       {
-      	$$ = ast_allocate(LITERAL_EXP, yyline, LIT_BOOL, 1);
+      	$$ = ast_allocate(LITERAL_EXP, yyline, TYPE_BOOL, 1);
       	yTRACE("expression -> TRUE_C \n")
       }
   | FALSE_C
       {
-      	$$ = ast_allocate(LITERAL_EXP, yyline, LIT_BOOL, 0);
+      	$$ = ast_allocate(LITERAL_EXP, yyline, TYPE_BOOL, 0);
       	yTRACE("expression -> FALSE_C \n")
       }
   | INT_C
       {
-      	$$ = ast_allocate(LITERAL_EXP, yyline, LIT_INT, $1);
+      	$$ = ast_allocate(LITERAL_EXP, yyline, TYPE_INT, $1);
       	yTRACE("expression -> INT_C \n")
       }
   | FLOAT_C
       {
-      	$$ = ast_allocate(LITERAL_EXP, yyline, LIT_FLOAT, $1);
+      	$$ = ast_allocate(LITERAL_EXP, yyline, TYPE_FLOAT, $1);
       	yTRACE("expression -> FLOAT_C \n")
       }
 
@@ -427,11 +466,7 @@ arguments_opt
  * functions as necessary in subsequent phases.
  ***********************************************************************/
 void yyerror(const char* s) {
-  if(errorOccurred) {	  enum literal_type {
-	  	LIT_BOOL,
-	  	LIT_INT,
-	  	LIT_FLOAT
-	  };
+  if(errorOccurred){
     return;    /* Error has already been reported by scanner */
   } else {
     errorOccurred = 1;

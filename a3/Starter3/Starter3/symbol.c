@@ -6,12 +6,11 @@ std::unique_ptr<SymbolCactus> symbolCactus(new SymbolCactus);
 
 Symbol::Symbol()
 {
-  var_type = NONE;
+  var_type = TYPE_INVALID;
   attribute = 0;
   line_num = 0;
   name = "";
   isConstant = 0;
-  index_size = 0;
 }
 
 SymbolCactus::SymbolCactus()
@@ -20,11 +19,10 @@ SymbolCactus::SymbolCactus()
 
     Symbol preDefNodes; // abusing the fact that insert uses the copy constuctor
 
-    preDefNodes.var_type = TYPE_FLOAT;
+    preDefNodes.var_type = TYPE_VEC4;
     preDefNodes.line_num = 0;
     preDefNodes.isConstant = 0;
     preDefNodes.name = "gl_FragColor";
-    preDefNodes.index_size = 4;
     preDefNodes.attribute = RESULT;
     insert(preDefNodes);
 
@@ -33,12 +31,10 @@ SymbolCactus::SymbolCactus()
 
     preDefNodes.var_type = TYPE_BOOL;
     preDefNodes.name = "gl_FragDepth";
-    preDefNodes.index_size = 0;
     insert(preDefNodes);
 
-    preDefNodes.var_type = TYPE_FLOAT;
+    preDefNodes.var_type = TYPE_VEC4;
     preDefNodes.name = "gl_TexCoord";
-    preDefNodes.index_size = 4;
     preDefNodes.attribute = ATTRIBUTE | INITIALIZED;
     insert(preDefNodes);
 
@@ -52,10 +48,9 @@ SymbolCactus::SymbolCactus()
     preDefNodes.name = "gl_FogFragCoord";
     insert(preDefNodes);
 
-    preDefNodes.var_type = TYPE_FLOAT;
+    preDefNodes.var_type = TYPE_VEC4;
     preDefNodes.isConstant = 1;
     preDefNodes.name = "gl_Light_Half";
-    preDefNodes.index_size = 4;
     preDefNodes.attribute = UNIFORM | INITIALIZED;
     insert(preDefNodes);
 
@@ -101,17 +96,17 @@ int SymbolCactus::insert(Symbol &symbol)
     return SUCCESS;
 }
 
-Symbol* SymbolCactus::find(const char *ID)
+Symbol* SymbolCactus::find(const char *identifer)
 {
-    std::string sIdentifier(ID);
+    std::string sIdentifier(identifer);
     return find(sIdentifier);
 }
-Symbol* SymbolCactus::find(std::string ID)
+Symbol* SymbolCactus::find(std::string identifer)
 {
     list<unordered_map<string, Symbol>>::reverse_iterator symbolTableReIt = symbolsTable.rbegin(); // reverse iterator
     while (symbolTableReIt != symbolsTable.rend())
     {
-        auto search = symbolTableIt->find(ID);
+        auto search = symbolTableIt->find(identifer);
 
         if (search != symbolTableIt->end()) // found
             return &(search->second);          // search is a std::pair< key, value>, where value is Symbol*

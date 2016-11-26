@@ -6,6 +6,7 @@
 #include "common.h"
 extern std::unique_ptr<SymbolCactus> symbolCactus;
 
+enum data_type getExpressionResultType(node *N);
 
 int semantic_check( node *ast); //wrapper
 void pre_check(node* N);// does the actual checking

@@ -29,12 +29,11 @@ public:
   ~Symbol(){};
   // Symbol(const Symbol &obj); // copy constructor cannot copy over isDynamic
 
-  Var_type var_type;
+  enum data_type var_type;
   int8_t attribute;
   int line_num;
   std::string name;
   int isConstant;
-  int index_size;
 
 private:
 };
@@ -54,8 +53,8 @@ public:
   SymbolCactus();
   ~SymbolCactus();
   int insert(Symbol &symbol); // see defines in symbol.c for return value
-  Symbol *find(const char *ID);
-  Symbol *find(std::string ID);
+  Symbol *find(const char *identifer);
+  Symbol *find(std::string identifer);
   void pushScope();
   void popScope();
 

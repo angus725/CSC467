@@ -5,7 +5,7 @@
 #include <stdarg.h>
 #include <string>
 #include <stdint.h>
-// #include "semantic.h"
+
 
 // Dummy node just so everything compiles, create your own node/nodes
 //
@@ -41,24 +41,24 @@ typedef enum {
     ARGUMENTS_OPT
 } node_kind;
 
-enum Var_type
+enum data_type
 {
-    NONE = 0,
+    TYPE_UNKNOWN = 0,
+	TYPE_BOOL,
+	TYPE_BVEC2,
+	TYPE_BVEC3,
+	TYPE_BVEC4,
     TYPE_INT,
-    TYPE_BOOL,
+	TYPE_IVEC2,
+	TYPE_IVEC3,
+	TYPE_IVEC4,
     TYPE_FLOAT,
-    // TYPE_VEC2,
-    // TYPE_VEC3,
-    // TYPE_VEC4,
-    // TYPE_VINT2,
-    // TYPE_VINT3,
-    // TYPE_VINT4,
-    // TYPE_VBOOL2,
-    // TYPE_VBOOL3,
-    // TYPE_VBOOL4,
+	TYPE_VEC2,
+	TYPE_VEC3,
+	TYPE_VEC4,
     TYPE_ANY, // for bypassing errors
 
-    INVALID = -1,
+    TYPE_INVALID = -1,
     WRITE_ONLY = -2,
     NOT_FOUND = -3,
 };
@@ -82,7 +82,7 @@ enum binary_opt
 {
     BOPT_AND,
     BOPT_OR,
-    BOPT_XOR,
+    BOPT_EXPO,
     BOPT_EQ,
     BOPT_NEQ,
     BOPT_LT,
@@ -95,16 +95,8 @@ enum binary_opt
     BOPT_DIV,
 };
 
-enum literal_type
-{
-    LIT_BOOL,
-    LIT_INT,
-    LIT_FLOAT,
-    LIT_ANY, // for bypassing errors
 
-};
-
-void varTypeToText(Var_type var_type, std::string &result);
+void varTypeToText(enum data_type data_type, std::string &result);
 
 struct node_
 {
@@ -155,7 +147,7 @@ struct node_
 
 	struct
 	{
-	    enum Var_type var_type;
+	    enum data_type var_type;
 	    int array_bound;
 	} type;
 
@@ -168,6 +160,7 @@ struct node_
 	struct
 	{
 	    enum func_type func;
+	    enum data_type result_type;
 	    node *args_opt;
 	} func_call_exp;
 
@@ -175,7 +168,7 @@ struct node_
 	{
 	    enum unary_opt uopt;
 	    node *operand;
-	    char *result_type;
+	    enum data_type result_type;
 	} unary_exp;
 
 	struct
@@ -183,13 +176,12 @@ struct node_
 	    enum binary_opt bopt;
 	    node *operand1;
 	    node *operand2;
-	    char *result_type; //Need to be filled from semantic analysis
+	    enum data_type result_type; //Need to be filled from semantic analysis
 	} binary_exp;
 
 	struct
 	{
-	    enum literal_type lit_type;
-	    enum Var_type var_type; // used by symantic checker "getExpressionResultType"
+	    enum data_type lit_type; // used by symantic checker "getExpressionResultType"
 	    union {
 		int val_bool;
 		int val_int;
@@ -203,7 +195,7 @@ struct node_
 	    int array_index; // ie, the second 4 in vec4 vector[4]
 	    int has_index;
 	    int array_bound;	//Need to be filled from sematic analysis
-	    enum Var_type var_type; //Need to be filled from sematic analysis
+	    enum data_type var_type; //Need to be filled from sematic analysis
 	} variable;
     };
 };
@@ -216,6 +208,7 @@ void ast_traversal(
     void (*pre_order_func)(node *N),
     void (*post_order_func)(node *N));
 int is_expression(node_kind kind);
-char *type_to_str(enum Var_type type, int array_bound);
+char *type_to_str(enum data_type type);
+enum data_type var_type_to_base (enum data_type var_type);
 
 #endif /* AST_H_ */
