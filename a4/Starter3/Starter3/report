@@ -1,0 +1,19 @@
+Work Breakdown:
+	Top level design and brain storming: Both members
+	AST design, construction, destruction, print: Eric
+	Symbol Table design and implementation: Angus
+	Semantic Analysis: Both Members
+	Debugging: Both Members
+
+Approach:
+
+The ast was designed in pure C style with different type of nodes having some shared attribute defined in common region and different attributes stored in an union. The different attributes are demultiplexed using the node kind field. The types of nodes defined roughly follows the context free grammar rules in parser.y. Each node correspend to 1 or more production rules. The construction of the ast follows the bottom up traversal order that the parser operates in. Semantic check and printing are both done through an ast traversal function capable of both pre-order and post-order traversal simultaneously. Each time a node is visited, it is handled by a giant switch case statement based on its node kind. The symbol table is implemented in C++ using a hashtable. Predefined variables are inserted into the symbol table upon initialization. Semantic analaysis is done after ast construction on it's done while recursively traversing the tree.
+
+Challenges:
+It's not very clear what was the right way to tranlaste a non-terminal that represent a list of non-terminals such as "declarations" "statements" and "arguments_opt". With the way we built the tree, the declarations and statements are also traversed in the reverse order duing semantic analysis, preventing proper analysis of dependencies. Complex symbol table that was difficult to debug due to complexity of nested standard libary data structures. 
+
+Bonuses Attempted:
+	Report line number
+	const qualifed variable must be initialized with literal or uniform variables
+	Provide a contextual message that gives extra meaning to the error to help the programmer debug the error
+
