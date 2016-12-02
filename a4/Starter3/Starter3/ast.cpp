@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <string.h>
+#include <stdarg.h>
+
+
 
 #include "ast.h"
 #include "common.h"
@@ -49,10 +52,7 @@ node *ast_allocate(node_kind kind, ...)
         ast->multi_node.cur_node = va_arg(args, node *);
         break;
     case DECLARATION:
-        ast->declaration.is_const = va_arg(args, int);
-        ast->declaration.type = va_arg(args, node *);
-        ast->declaration.identifier = va_arg(args, char *);
-        ast->declaration.expression = va_arg(args, node *);
+
         break;
     case ASSIGN_STATEMENT:
         ast->assignment_statement.variable = va_arg(args, node *);
@@ -414,121 +414,262 @@ void ast_print(node *ast)
 }
 
 
+
+/********************************************
+***** 		all that new CPP stuff		*****
+*********************************************/
+
 Node::Node()
 {
+	line_num = 0;
 }
 
-Node::~Node()
+Scope::Scope(va_list args)
 {
-}
-
-ostream& operator<<(ostream& os, const Node& node)
-{
-	return os;
-}
-
-Scope::Scope(...)
-{
+	line_num = va_arg(args, int);
+	declarations = va_arg(args, Node *);
+	statements = va_arg(args, Node *);
 }
 
 Scope::~Scope()
 {
+	if(declarations)
+		delete declarations;
+	if(statements)
+		delete statements;
 }
 
-MultiNode::MultiNode(...)
+MultiNode::MultiNode(va_list args)
 {
+	line_num = va_arg(args, int);
+	nodes = va_arg(args, Node *);
+	cur_node = va_arg(args, Node *);
 }
 
 MultiNode::~MultiNode()
 {
+	if(nodes)
+		delete nodes;
+	if(cur_node)
+		delete cur_node;
 }
 
-Declaration::Declaration(...)
+Declaration::Declaration(va_list args)
 {
+	line_num = va_arg(args, int);
+	is_const = va_arg(args, int);
+	type = va_arg(args, Node *);
+	identifier = std::string(va_arg(args, char *));
+	expression = va_arg(args, Node *);
 }
 
 Declaration::~Declaration()
 {
+	if(type)
+		delete type;
+	if(expression)
+		delete expression;
 }
 
-IfStatement::IfStatement(...)
+IfStatement::IfStatement(va_list args)
 {
+	line_num = va_arg(args, int);
+	if_confition = va_arg(args, Node *);
+	if_body = va_arg(args, Node *);
+	else_body = va_arg(args, Node *);
 }
 
 IfStatement::~IfStatement()
 {
+	if(if_confition)
+		delete if_confition;
+	if(if_body)
+		delete if_body;
+	if(else_body)
+		delete else_body;
 }
 
-AssignStatement::AssignStatement(...)
+AssignStatement::AssignStatement(va_list args)
 {
+	line_num = va_arg(args, int);
+	variable = va_arg(args, Node *);
+	expression = va_arg(args, Node *);
 }
 
 AssignStatement::~AssignStatement()
 {
+	if(variable)
+		delete variable;
+	if(expression)
+		delete expression;
 }
 
 
-Type::Type(...)
+Type::Type(va_list args)
 {
+	line_num = va_arg(args, int);
+	var_type = (data_type)va_arg(args, int);
+	array_bound = va_arg(args, int);
 }
 
 Type::~Type()
 {
+	// no children to delete
 }
 
 Expression::Expression()
 {
+	constantValue = false; // default false
 }
 
-Expression::~Expression()
+Variable::Variable(va_list args)
 {
-}
-
-Variable::Variable(...)
-{
+	line_num = va_arg(args, int);
+	identifier = std::string(va_arg(args, char *));
+	has_index = va_arg(args, int);
+	if (has_index)
+		array_index = va_arg(args, int);
 }
 
 Variable::~Variable()
 {
+	// no children to delete
 }
 
-
-FunctionCall::FunctionCall(...)
+FunctionCall::FunctionCall(va_list args)
 {
+	line_num = va_arg(args, int);
+	func = (enum func_type)va_arg(args, int);
+	args_opt = va_arg(args, Node *);
+	result_type = TYPE_UNKNOWN;
 }
 
 FunctionCall::~FunctionCall()
 {
+	if(args_opt)
+		delete args_opt;
 }
 
-Constructor::Constructor(...)
+Constructor::Constructor(va_list args)
 {
+	line_num = va_arg(args, int);
+	type = va_arg(args, Node *);
+	args_opt = va_arg(args, Node *);
 }
 
 Constructor::~Constructor()
 {
+	if(type)
+		delete type;
+	if(args_opt)
+		delete args_opt;
 }
 
-UnaryOP::UnaryOP(...)
+UnaryOP::UnaryOP(va_list args)
 {
+	line_num = va_arg(args, int);
+	uopt = (enum unary_opt)va_arg(args, int);
+	operand = va_arg(args, Node *);
 }
 
 UnaryOP::~UnaryOP()
 {
+	if(operand)
+		delete operand;
 }
 
-BinaryOP::BinaryOP(...)
+BinaryOP::BinaryOP(va_list args)
 {
+	line_num = va_arg(args, int);
+	bopt = (enum binary_opt)va_arg(args, int);
+	operand1 = va_arg(args, Node *);
+	operand2 = va_arg(args, Node *);
+
 }
 
 BinaryOP::~BinaryOP()
 {
+	if(operand1)
+		delete operand1;
+	if(operand2)
+			delete operand2;
+
 }
 
-LiteralExp::LiteralExp(...)
+LiteralExp::LiteralExp(va_list args)
 {
+	line_num = va_arg(args, int);
+	lit_type = (enum data_type)va_arg(args, int);
+			switch (lit_type) {
+			case TYPE_BOOL:
+				val_bool = va_arg(args, int);
+
+				break;
+			case TYPE_INT:
+				val_int = va_arg(args, int);
+
+				break;
+			case TYPE_FLOAT:
+				val_float = va_arg(args, double);
+				break;
+			default:
+				break;
+			}
 }
 
 LiteralExp::~LiteralExp()
 {
+	// no children to delete
+}
+
+Node* astAllocate(node_kind kind, ...) {
+	va_list args;
+	va_start(args, kind);
+
+	Node* pNode;
+	//	ast->line_num = va_arg(args, int);
+	switch (kind) {
+	case SCOPE:
+		pNode = new Scope(args);
+		break;
+	case MULTI_NODE:
+		pNode = new MultiNode(args);
+		break;
+	case DECLARATION:
+		pNode = new Declaration(args);
+		break;
+	case ASSIGN_STATEMENT:
+		pNode = new AssignStatement(args);
+		break;
+	case IF_STATEMENT:
+		pNode = new IfStatement(args);
+		break;
+	case TYPE:
+		pNode = new Type(args);
+		break;
+	case FUNC_CALL_EXP:
+		pNode = new FunctionCall(args);
+		break;
+	case CONSTRUCTOR_EXP:
+		pNode = new Constructor(args);
+		break;
+	case UNARY_EXP:
+		pNode = new UnaryOP(args);
+		break;
+	case BINARY_EXP:
+		pNode = new BinaryOP(args);
+		break;
+	case LITERAL_EXP:
+		pNode = new LiteralExp(args);
+		break;
+	case VARIABLE:
+		pNode = new Variable(args);
+		break;
+	default:
+		break;
+	}
+
+	va_end(args);
+
+	return pNode;
 }

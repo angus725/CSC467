@@ -11,7 +11,7 @@
 #define DEPRECATED
 #endif
 
-#include <stdarg.h>
+#include <cstdarg>
 #include <string>
 #include <iostream>
 #include <stdint.h>
@@ -210,7 +210,7 @@ struct node_ // deprecated
 };
 
 DEPRECATED node *ast_allocate(node_kind type, ...);
-void ast_free(node *ast);
+DEPRECATED void ast_free(node *ast);
 void ast_print(node *ast);
 void ast_traversal(
 	node *ast,
@@ -229,7 +229,7 @@ class Node
 
 public:
 	Node();
-	~Node();
+	virtual ~Node() {}; // do nothing
 	int line_num;
 
 protected:
@@ -263,7 +263,7 @@ private:
 class Scope : public Node
 {
 public:
-	Scope(...);
+	Scope(va_list vaList);
 	~Scope();
 	Node* declarations;
 	Node* statements;
@@ -274,7 +274,7 @@ private:
 class MultiNode : public Node
 {
 public:
-	MultiNode(...);
+	MultiNode(va_list vaList);
 	~MultiNode();
 	Node *nodes;
 	Node *cur_node;
@@ -288,7 +288,7 @@ private:
 class Declaration : public Node
 {
 public:
-	Declaration(...);
+	Declaration(va_list vaList);
 	~Declaration();
 
 
@@ -306,7 +306,7 @@ private:
 class IfStatement : public Node
 {
 public:
-	IfStatement(...);
+	IfStatement(va_list vaList);
 	~IfStatement();
 	Node *if_confition;
 	Node *if_body;
@@ -318,7 +318,7 @@ private:
 class AssignStatement : public Node
 {
 public:
-	AssignStatement(...);
+	AssignStatement(va_list vaList);
 	~AssignStatement();
 	Node *variable;
 	Node *expression;
@@ -333,7 +333,7 @@ private:
 class Type : public Node
 {
 public:
-	Type(...);
+	Type(va_list vaList);
 	~Type();
 	enum data_type var_type;
 	int array_bound;
@@ -345,7 +345,7 @@ class Expression : public Node
 {
 public:
 	Expression();
-	~Expression();
+	virtual ~Expression() {};
 	virtual bool isConst() {
 		return constantValue;
 	};
@@ -360,9 +360,9 @@ private:
 class Variable : public Expression
 {
 public:
-	Variable(...);
+	Variable(va_list vaList);
 	~Variable();
-	std::string *identifier;
+	std::string identifier;
 	int array_index; // ie, the second 4 in vec4 vector[4]
 	int has_index;
 	int array_bound;	//Need to be filled from sematic analysis
@@ -375,7 +375,7 @@ class FunctionCall : public Expression
 {
 
 public:
-	FunctionCall(...);
+	FunctionCall(va_list vaList);
 	~FunctionCall();
 
 	enum func_type
@@ -396,7 +396,7 @@ private:
 class Constructor : public Expression
 {
 public:
-	Constructor(...);
+	Constructor(va_list vaList);
 	~Constructor();
 
 private:
@@ -407,7 +407,7 @@ private:
 class UnaryOP : public Expression
 {
 public:
-	UnaryOP(...);
+	UnaryOP(va_list vaList);
 	~UnaryOP();
 
 	enum unary_opt
@@ -425,7 +425,7 @@ private:
 class BinaryOP : public Expression
 {
 public:
-	BinaryOP(...);
+	BinaryOP(va_list vaList);
 	~BinaryOP();
 	enum binary_opt
 	{
@@ -455,7 +455,7 @@ private:
 class LiteralExp : public Expression
 {
 public:
-	LiteralExp(...);
+	LiteralExp(va_list vaList);
 	~LiteralExp();
 	//static const bool constantValue = true; // might not be needed
 	enum data_type lit_type; // used by symantic checker "getExpressionResultType"
