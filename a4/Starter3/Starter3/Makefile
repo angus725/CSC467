@@ -22,10 +22,10 @@
 # Compiler and Compiler Flags
 ###########################################################################
 CC      =g++
-#CXX     =g++
-CFLAGS  =-g -O0 -Wall -Wno-write-strings -std=c++0x
+CXX     =g++
+CFLAGS  =-g -O0 -Wall -Wno-write-strings -std=c++11
 #ugg, using -std=c++11 on CFLAGS is a horrible feeling. But the hack is easier than rewriting a bigger chunk of makefile
-#CXXFLAGS =  -O0 -Wall -Wno-write-strings
+CXXFLAGS =  -O0 -Wall -Wno-write-strings -std=c++11
 LDLIBS  =-lfl
 
 LEX     =flex

@@ -237,7 +237,7 @@ static char *bopt_to_string(enum binary_opt opt)
     }
 }
 
-char *type_to_str(enum data_type type) // function duplicate with varTypeToText
+char *type_to_str(enum data_type type)
 {
 	    switch(type)
 	    {
@@ -364,7 +364,6 @@ static void print_node_pre(node *ast)
         }
         break;
     case VARIABLE:
-        // varTypeToText(ast->variable.var_type, temp);
         if (ast->variable.has_index)
         {
 
@@ -412,4 +411,124 @@ void ast_print(node *ast)
     ast_traversal(ast, print_node_pre, print_node_post);
     printf("\n");
 
+}
+
+
+Node::Node()
+{
+}
+
+Node::~Node()
+{
+}
+
+ostream& operator<<(ostream& os, const Node& node)
+{
+	return os;
+}
+
+Scope::Scope(...)
+{
+}
+
+Scope::~Scope()
+{
+}
+
+MultiNode::MultiNode(...)
+{
+}
+
+MultiNode::~MultiNode()
+{
+}
+
+Declaration::Declaration(...)
+{
+}
+
+Declaration::~Declaration()
+{
+}
+
+IfStatement::IfStatement(...)
+{
+}
+
+IfStatement::~IfStatement()
+{
+}
+
+AssignStatement::AssignStatement(...)
+{
+}
+
+AssignStatement::~AssignStatement()
+{
+}
+
+
+Type::Type(...)
+{
+}
+
+Type::~Type()
+{
+}
+
+Expression::Expression()
+{
+}
+
+Expression::~Expression()
+{
+}
+
+Variable::Variable(...)
+{
+}
+
+Variable::~Variable()
+{
+}
+
+
+FunctionCall::FunctionCall(...)
+{
+}
+
+FunctionCall::~FunctionCall()
+{
+}
+
+Constructor::Constructor(...)
+{
+}
+
+Constructor::~Constructor()
+{
+}
+
+UnaryOP::UnaryOP(...)
+{
+}
+
+UnaryOP::~UnaryOP()
+{
+}
+
+BinaryOP::BinaryOP(...)
+{
+}
+
+BinaryOP::~BinaryOP()
+{
+}
+
+LiteralExp::LiteralExp(...)
+{
+}
+
+LiteralExp::~LiteralExp()
+{
 }
