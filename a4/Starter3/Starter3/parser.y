@@ -65,7 +65,7 @@ enum {
   double as_float;
   char *as_str;
   int as_func;
-  Node *as_ast;
+  ASTNode *as_ast;
 }
 
 %token          FLOAT_T

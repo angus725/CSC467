@@ -54,7 +54,7 @@ extern int   yyline;
 /* Phase 2: Parser Interface. Merely uncomment the following line */
 extern int yyparse(void);
 
-extern int semantic_check(Node *ast);
+extern int semantic_check(ASTNode *ast);
 
 
 

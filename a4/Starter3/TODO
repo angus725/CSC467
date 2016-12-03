@@ -1,0 +1,45 @@
+Here's the idea:
+
+
+1. AST (tree) -> 2. IR (probably a tree) -> 3. DataFlow (directed graph) -> 4. register resolution (graph) -> 5. register map table (array?) ->6. IR to INST translation
+
+1. AST is complete. I refactored this from C to CPP so it's workable and much safer. 
+The only thing you need to watch out for, is that for:
+	declarations
+	statements (multi-node)
+	scope
+	argument_opt
+	and maybe others
+One of the pointers to the next node maybe NULL. So it is important to check if the next tree node is valid before dereferencing.
+
+2. IR: I've started this with "intermediateRepresentation.cpp/.h" files. These define the class that consstitutes the data fields of this tree..
+	I haven't thought it through completely yet, but I suspect it will be similar in layout to the AST, but simplified..
+	We also need to create our own IR for this. Not diffucult, but busy work.
+	To translate the AST to this tree, I have added the "createAndInsertIRNode.cpp" file. You can find the functions defined there.
+		I expect these functions to be recursive. Please check out the refactored ast.cpp and included files to see how I've implemented them.
+
+3. DataFlow graph: Additional structure to the IR to map out data dependencies. Haven't figured out how to generate this yet.
+	Probably will be some iterative function through the IR list/Tree though.
+	I've made "DataFlowAnalysis.cpp". You can make the .h file. Implementation is up to you.
+
+4. register resolution (aka interference graph on lecture slides)
+	Havnen't gotten around to thinking about this yet.
+	File is created as "RegisterMappingGraph"
+
+5. Register map table
+	When you solve 4., I believe every variable from the IR will be mapped to a register given to us on the spec sheet.
+	File is created as "RegisterMap.cpp"
+
+6. IR to INST translation (aka scheduling)
+	Iterate through the IR tree using the register map table to generate the final assembly code. Similar to ASTPrint.
+	While we could do dynamic programming to solve this, that's another non-trivial huge piece of algorithm...
+
+Notes:
+
+Don't forget to update the makefile with new .o files for each .cpp (except the ones I'm #include "x.cpp")
+
+Eclipse works with CPP. If you want me to show you how, give me a call after NOON tomorrow (I'm.. still awake too late...)
+
+Start thinking of how to implement if statements without branching or jumping. I'm stuck on this problem in my head right now.
+	
+	

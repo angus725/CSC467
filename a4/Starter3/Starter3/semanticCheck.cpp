@@ -9,7 +9,7 @@ extern char* type_to_str(enum data_type dType);
 
 extern std::unique_ptr<SymbolCactus> symbolCactus;
 
-int Node::nestedIfCount = 0;
+int ASTNode::nestedIfCount = 0;
 
 int Scope::checkSemantic()
 {

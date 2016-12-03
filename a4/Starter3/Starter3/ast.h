@@ -15,6 +15,7 @@
 #include <string>
 #include <iostream>
 #include <stdint.h>
+#include "intermediateRepresentation.h"
 
 
 
@@ -29,13 +30,13 @@
 
 // forward declare
 //struct node_;
-//typedef struct node_ Node;
+//typedef struct node_ ASTNode;
 //extern node *ast;
-class Node;
+class ASTNode;
 class Type;
 class Expression;
 class Variable;
-extern Node *ast;
+extern ASTNode *ast;
 
 
 typedef enum {
@@ -114,26 +115,37 @@ enum unary_opt
 };
 
 
-Node* astAllocate(node_kind kind, ...); // calls each constructor
+ASTNode* astAllocate(node_kind kind, ...); // calls each constructor
 data_type var_type_to_base(data_type var_type);
 char* type_to_str(data_type);
 
 
-class Node
+class ASTNode
 {
 
 public:
-	Node();
-	virtual ~Node() {}; // do nothing
+	//****** for use with syntax tree generation ******//
+	ASTNode();
+	virtual ~ASTNode() {}; // do nothing, handled by inherited class
+
+	//******	for use with printing AST		******//
 	virtual void printSyntaxTree() = 0;
-	virtual int checkSemantic()=0;
+
+	//******		for semantic analysis		******//
+	virtual int checkSemantic() =0;
+
+	//******			utilities				******//
 	virtual int isWriteOnly() { return -1; }; //default to invalid return
 	virtual int is_expression() { return 0; }; // default to no
 	virtual int countParameters() { return 1; }; // only overloaded by multinode (arg list)
 	virtual data_type getResultType() { return TYPE_INVALID; };
 	virtual int isConst() { return constantValue; };
 	int getLineNum() { return line_num; };
-
+	
+	//******		for generating IR list		******//
+	virtual void createAndInsertIRNode() = 0;
+	
+	//***** "global variables" *******//
 	static int nestedIfCount;
 protected:
 	int line_num;
@@ -143,7 +155,7 @@ private:
 
 };
 
-class Scope : public Node
+class Scope : public ASTNode
 {
 public:
 	Scope(va_list &args);
@@ -152,13 +164,13 @@ public:
 	int checkSemantic();
 	//int isWriteOnly(); // not sure what this should evaluate to. Default to -1
 	//	data_type getResultType() { return TYPE_INVALID; };
-
+	void createAndInsertIRNode();
 private:
-	Node* declarations;
-	Node* statements;
+	ASTNode* declarations;
+	ASTNode* statements;
 };
 
-class MultiNode : public Node
+class MultiNode : public ASTNode
 {
 public:
 	MultiNode(node_kind kind, va_list &args);
@@ -168,16 +180,16 @@ public:
 	int isWriteOnly();
 	data_type getResultType();
 	int countParameters();
-
+	void createAndInsertIRNode();
 protected:
 	node_kind kind;
-	Node *nodes;
-	Node *cur_node;
+	ASTNode *nodes;
+	ASTNode *cur_node;
 private:
 
 };
 
-class Declaration : public Node
+class Declaration : public ASTNode
 {
 public:
 	Declaration(va_list &args);
@@ -187,6 +199,7 @@ public:
 	//int isWriteOnly(); // totally invalid call. makes no sense. returning -1 as per default
 	//data_type getResultType() { return TYPE_INVALID; };
 	int isConst() { return is_const; }; // special case
+	void createAndInsertIRNode();
 protected:
 private:
 	int is_const;
@@ -196,7 +209,7 @@ private:
 	bool constantValue;
 };
 
-class IfStatement : public Node
+class IfStatement : public ASTNode
 {
 public:
 	IfStatement(va_list &args);
@@ -205,15 +218,15 @@ public:
 	int checkSemantic();
 	//int isWriteOnly(); // totally invalid call. makes no sense. returning -1 as per default
 	//	data_type getResultType() { return TYPE_INVALID; };
-
+	void createAndInsertIRNode();
 private:
 
-	Node *if_confition;
-	Node *if_body;
-	Node *else_body;
+	ASTNode *if_confition;
+	ASTNode *if_body;
+	ASTNode *else_body;
 };
 
-class AssignStatement : public Node
+class AssignStatement : public ASTNode
 {
 public:
 	AssignStatement(va_list &args);
@@ -222,7 +235,7 @@ public:
 	int checkSemantic();
 	//int isWriteOnly(); // totally invalid call. makes no sense. returning -1 as per default
 	//	data_type getResultType() { return TYPE_INVALID; };
-
+	void createAndInsertIRNode();
 protected:
 
 private:
@@ -232,7 +245,7 @@ private:
 	bool constantValue;
 };
 
-class Type : public Node
+class Type : public ASTNode
 {
 public:
 	Type(va_list &args);
@@ -241,14 +254,14 @@ public:
 	int checkSemantic();
 	//int isWriteOnly(); // totally invalid call. makes no sense. returning -1 as per default
 	data_type getResultType() { return var_type; }; // not quite expressionResultType, but a type none the less
-
+	void createAndInsertIRNode();
 
 private:
 	data_type var_type;
 	int array_bound;
 };
 
-class Expression : public Node
+class Expression : public ASTNode
 {
 public:
 	Expression();
@@ -273,7 +286,7 @@ public:
 	data_type getResultType() {return var_type;};
 	int get_array_bound();
 	std::string getID() { return identifier; };
-
+	void createAndInsertIRNode();
 private:
 	std::string identifier;
 	int array_index; // ie, the second 4 in vec4 vector[4]
@@ -293,12 +306,12 @@ public:
 	int isWriteOnly();
 	data_type getResultType() { return result_type; };
 	data_type CalcFuncResultType();
-
+	void createAndInsertIRNode();
 private:
 	char *func_to_str(enum func_type type);
 	func_type func;
 	data_type result_type;
-	Node *args_opt;
+	ASTNode *args_opt;
 };
 
 class Constructor : public Expression
@@ -310,11 +323,11 @@ public:
 	int checkSemantic();
 	int isWriteOnly();
 	data_type getResultType() { return type->getResultType(); };
-
+	void createAndInsertIRNode();
 
 private:
 	Type *type;
-	Node *args_opt;
+	ASTNode *args_opt;
 };
 
 class UnaryOP : public Expression
@@ -326,7 +339,7 @@ public:
 	int checkSemantic();
 	int isWriteOnly();
 	data_type getResultType() { return result_type; };
-
+	void createAndInsertIRNode();
 
 private:
 	char *uopt_to_string(enum unary_opt opt);
@@ -344,7 +357,7 @@ public:
 	int checkSemantic();
 	int isWriteOnly();
 	data_type getResultType() { return result_type; };
-
+	void createAndInsertIRNode();
 private:
 	char *bopt_to_string(enum binary_opt opt);
 	binary_opt bopt;
@@ -363,7 +376,7 @@ public:
 	int checkSemantic();
 	int isWriteOnly();
 	data_type getResultType() { return lit_type; };
-
+	void createAndInsertIRNode();
 private:
 	//static const bool constantValue = true; // might not be needed
 	data_type lit_type; // used by symantic checker "getResultType"

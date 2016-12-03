@@ -14,13 +14,13 @@
 
 #define DEBUG_PRINT_TREE 0
 
-Node *ast = NULL;
+ASTNode *ast = NULL;
 
 /*********************************************************************
 ***** 		all that new CPP stuff		******************************
 **********************************************************************/
 
-Node::Node()
+ASTNode::ASTNode()
 {
 	line_num = 0;
 	constantValue = 0;
@@ -96,8 +96,8 @@ int isScalar(data_type dType) // output for type_Unknown and type_any is undefin
 Scope::Scope(va_list &args)
 {
 	line_num = va_arg(args, int);
-	declarations = va_arg(args, Node *);
-	statements = va_arg(args, Node *);
+	declarations = va_arg(args, ASTNode *);
+	statements = va_arg(args, ASTNode *);
 }
 
 Scope::~Scope()
@@ -111,8 +111,8 @@ Scope::~Scope()
 MultiNode::MultiNode(node_kind kind_, va_list &args)
 {
 	line_num = va_arg(args, int);
-	nodes = va_arg(args, Node *);
-	cur_node = va_arg(args, Node *);
+	nodes = va_arg(args, ASTNode *);
+	cur_node = va_arg(args, ASTNode *);
 	kind = kind_;
 }
 
@@ -128,9 +128,9 @@ Declaration::Declaration(va_list &args)
 {
 	line_num = va_arg(args, int);
 	is_const = va_arg(args, int);
-	type = static_cast<Type*> (va_arg(args, Node *));
+	type = static_cast<Type*> (va_arg(args, ASTNode *));
 	identifier = std::string(va_arg(args, char *));
-	expression = static_cast<Expression*> (va_arg(args, Node *));
+	expression = static_cast<Expression*> (va_arg(args, ASTNode *));
 }
 
 Declaration::~Declaration()
@@ -144,9 +144,9 @@ Declaration::~Declaration()
 IfStatement::IfStatement(va_list &args)
 {
 	line_num = va_arg(args, int);
-	if_confition = va_arg(args, Node *);
-	if_body = va_arg(args, Node *);
-	else_body = va_arg(args, Node *);
+	if_confition = va_arg(args, ASTNode *);
+	if_body = va_arg(args, ASTNode *);
+	else_body = va_arg(args, ASTNode *);
 }
 
 IfStatement::~IfStatement()
@@ -162,8 +162,8 @@ IfStatement::~IfStatement()
 AssignStatement::AssignStatement(va_list &args)
 {
 	line_num = va_arg(args, int);
-	variable = static_cast<Variable*> (va_arg(args, Node *));
-	expression = static_cast<Expression*> (va_arg(args, Node *));
+	variable = static_cast<Variable*> (va_arg(args, ASTNode *));
+	expression = static_cast<Expression*> (va_arg(args, ASTNode *));
 }
 
 AssignStatement::~AssignStatement()
@@ -210,7 +210,7 @@ FunctionCall::FunctionCall(va_list &args)
 {
 	line_num = va_arg(args, int);
 	func = (enum func_type)va_arg(args, int);
-	args_opt = va_arg(args, Node *);
+	args_opt = va_arg(args, ASTNode *);
 	result_type = TYPE_UNKNOWN;
 }
 
@@ -238,8 +238,8 @@ char *FunctionCall::func_to_str(enum func_type type)
 Constructor::Constructor(va_list &args)
 {
 	line_num = va_arg(args, int);
-	type = static_cast<Type*>(va_arg(args, Node *));
-	args_opt = va_arg(args, Node *);
+	type = static_cast<Type*>(va_arg(args, ASTNode *));
+	args_opt = va_arg(args, ASTNode *);
 }
 
 Constructor::~Constructor()
@@ -254,7 +254,7 @@ UnaryOP::UnaryOP(va_list &args)
 {
 	line_num = va_arg(args, int);
 	uopt = (enum unary_opt)va_arg(args, int);
-	operand = static_cast<Expression*> (va_arg(args, Node *));
+	operand = static_cast<Expression*> (va_arg(args, ASTNode *));
 }
 
 UnaryOP::~UnaryOP()
@@ -280,8 +280,8 @@ BinaryOP::BinaryOP(va_list &args)
 {
 	line_num = va_arg(args, int);
 	bopt = (enum binary_opt)va_arg(args, int);
-	operand1 = static_cast<Expression*>(va_arg(args, Node *));
-	operand2 = static_cast<Expression*>(va_arg(args, Node *));
+	operand1 = static_cast<Expression*>(va_arg(args, ASTNode *));
+	operand2 = static_cast<Expression*>(va_arg(args, ASTNode *));
 
 }
 
@@ -355,11 +355,11 @@ LiteralExp::~LiteralExp()
 	// no children to delete
 }
 
-Node* astAllocate(node_kind kind, ...) {
+ASTNode* astAllocate(node_kind kind, ...) {
 	va_list args;
 	va_start(args, kind);
 
-	Node* pNode = NULL;
+	ASTNode* pNode = NULL;
 	//	ast->line_num = va_arg(args, int); // handled within each constructor.
 	switch (kind) {
 	case SCOPE:
@@ -409,6 +409,7 @@ Node* astAllocate(node_kind kind, ...) {
 
 #include "printAst.cpp"
 #include "semanticCheck.cpp"
+#include "createAndInsertIRNode.cpp"
 
 /*********************************************************************
 ***** 		all that old C stuff		******************************
