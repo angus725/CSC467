@@ -54,7 +54,7 @@ extern int   yyline;
 /* Phase 2: Parser Interface. Merely uncomment the following line */
 extern int yyparse(void);
 
-extern int semantic_check(node *ast);
+extern int semantic_check(Node *ast);
 
 
 
@@ -93,14 +93,18 @@ int main (int argc, char *argv[]) {
     return 0; // parse failed
   }
 
-  if(semantic_check(ast) != 0)
+  //if(semantic_check(ast) != 0) // old syntax
+  if (ast->checkSemantic() != 0)
   {
-    return 0; // semantic_check failed
+	  return 0; // semantic_check failed
   }
+  
+  
 
 /* Phase 3: Call the AST dumping routine if requested */
   if (dumpAST)
-    ast_print(ast);
+	  ast->printSyntaxTree();
+    //ast_print(ast);
 /* Phase 4: Add code to call the code generation routine */
 /* TODO: call your code generation routine here */
   if (errorOccurred)
@@ -113,7 +117,8 @@ int main (int argc, char *argv[]) {
  **********************************************************************/
 
 /* Make calls to any cleanup or finalization routines here. */
-  ast_free(ast);
+  //ast_free(ast);
+  delete ast;
 
   /* Clean up files if necessary */
   if (inputFile != DEFAULT_INPUT_FILE)
