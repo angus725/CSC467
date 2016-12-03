@@ -94,16 +94,13 @@ int main (int argc, char *argv[]) {
   }
 
   //if(semantic_check(ast) != 0) // old syntax
-  if (ast->checkSemantic() != 0)
-  {
-	  return 0; // semantic_check failed
-  }
-  
+  ast->checkSemantic();
   
 
 /* Phase 3: Call the AST dumping routine if requested */
   if (dumpAST)
 	  ast->printSyntaxTree();
+  printf("\n");
     //ast_print(ast);
 /* Phase 4: Add code to call the code generation routine */
 /* TODO: call your code generation routine here */

@@ -127,11 +127,11 @@ public:
 	virtual ~Node() {}; // do nothing
 	virtual void printSyntaxTree() = 0;
 	virtual int checkSemantic()=0;
-	int isWriteOnly() { return -1; }; //default to invalid return
-	int is_expression() { return 0; }; // default to no
-	int countParameters() { return 1; }; // only overloaded by multinode (arg list)
-	data_type getResultType() { return TYPE_INVALID; };
-	int isConst() {return constantValue;};
+	virtual int isWriteOnly() { return -1; }; //default to invalid return
+	virtual int is_expression() { return 0; }; // default to no
+	virtual int countParameters() { return 1; }; // only overloaded by multinode (arg list)
+	virtual data_type getResultType() { return TYPE_INVALID; };
+	virtual int isConst() { return constantValue; };
 	int getLineNum() { return line_num; };
 
 	static int nestedIfCount;
@@ -146,7 +146,7 @@ private:
 class Scope : public Node
 {
 public:
-	Scope(va_list vaList);
+	Scope(va_list &args);
 	~Scope();
 	void printSyntaxTree();
 	int checkSemantic();
@@ -161,7 +161,7 @@ private:
 class MultiNode : public Node
 {
 public:
-	MultiNode(node_kind kind, va_list vaList);
+	MultiNode(node_kind kind, va_list &args);
 	~MultiNode();
 	void printSyntaxTree();
 	int checkSemantic();
@@ -171,7 +171,6 @@ public:
 
 protected:
 	node_kind kind;
-	bool constantValue;
 	Node *nodes;
 	Node *cur_node;
 private:
@@ -181,7 +180,7 @@ private:
 class Declaration : public Node
 {
 public:
-	Declaration(va_list vaList);
+	Declaration(va_list &args);
 	~Declaration();
 	void printSyntaxTree();
 	int checkSemantic();
@@ -200,7 +199,7 @@ private:
 class IfStatement : public Node
 {
 public:
-	IfStatement(va_list vaList);
+	IfStatement(va_list &args);
 	~IfStatement();
 	void printSyntaxTree();
 	int checkSemantic();
@@ -217,7 +216,7 @@ private:
 class AssignStatement : public Node
 {
 public:
-	AssignStatement(va_list vaList);
+	AssignStatement(va_list &args);
 	~AssignStatement();
 	void printSyntaxTree();
 	int checkSemantic();
@@ -236,7 +235,7 @@ private:
 class Type : public Node
 {
 public:
-	Type(va_list vaList);
+	Type(va_list &args);
 	~Type();
 	void printSyntaxTree();
 	int checkSemantic();
@@ -256,11 +255,7 @@ public:
 	virtual ~Expression() {};
 	virtual void printSyntaxTree() = 0;
 	virtual int checkSemantic() = 0;
-
-
 	int is_expression() { return 1; };
-
-
 protected:
 
 private:
@@ -270,7 +265,7 @@ private:
 class Variable : public Expression
 {
 public:
-	Variable(va_list vaList);
+	Variable(va_list &args);
 	~Variable();
 	void printSyntaxTree();
 	int checkSemantic();
@@ -291,7 +286,7 @@ class FunctionCall : public Expression
 {
 
 public:
-	FunctionCall(va_list vaList);
+	FunctionCall(va_list &args);
 	~FunctionCall();
 	void printSyntaxTree();
 	int checkSemantic();
@@ -309,7 +304,7 @@ private:
 class Constructor : public Expression
 {
 public:
-	Constructor(va_list vaList);
+	Constructor(va_list &args);
 	~Constructor();
 	void printSyntaxTree();
 	int checkSemantic();
@@ -325,7 +320,7 @@ private:
 class UnaryOP : public Expression
 {
 public:
-	UnaryOP(va_list vaList);
+	UnaryOP(va_list &args);
 	~UnaryOP();
 	void printSyntaxTree();
 	int checkSemantic();
@@ -343,7 +338,7 @@ private:
 class BinaryOP : public Expression
 {
 public:
-	BinaryOP(va_list vaList);
+	BinaryOP(va_list &args);
 	~BinaryOP();
 	void printSyntaxTree();
 	int checkSemantic();
@@ -362,7 +357,7 @@ private:
 class LiteralExp : public Expression
 {
 public:
-	LiteralExp(va_list vaList);
+	LiteralExp(va_list &args);
 	~LiteralExp();
 	void printSyntaxTree();
 	int checkSemantic();

@@ -7,13 +7,17 @@
 void Scope::printSyntaxTree()
 {
 	printf("(SCOPE ");
-	declarations->printSyntaxTree();
-	statements->printSyntaxTree();
+	if (declarations)
+		declarations->printSyntaxTree();
+	if (statements)
+		statements->printSyntaxTree();
 	printf(")");
 }
 
 void MultiNode::printSyntaxTree()
 {
+	//printf("MULTI_NODE CONSTANT: %i\n", constantValue);
+
 	switch (kind)
 	{
 	case DECLARATION:
@@ -26,11 +30,14 @@ void MultiNode::printSyntaxTree()
 	default:
 		break;
 	}
-	
+
 	cur_node->printSyntaxTree();
-	nodes->printSyntaxTree();
+	if (nodes)
+		nodes->printSyntaxTree();
 	if (cur_node->is_expression())
 		return;
+
+
 	printf(")");
 }
 
@@ -38,7 +45,8 @@ void Declaration::printSyntaxTree()
 {
 	printf("(DECLARATION %s ", identifier.c_str());
 	type->printSyntaxTree();
-	expression->printSyntaxTree();
+	if (expression)
+		expression->printSyntaxTree();
 	printf(")");
 }
 
@@ -47,7 +55,8 @@ void IfStatement::printSyntaxTree()
 	printf("(IF ");
 	if_confition->printSyntaxTree();
 	if_body->printSyntaxTree();
-	else_body->printSyntaxTree();
+	if (else_body)
+		else_body->printSyntaxTree();
 	printf(")");
 }
 

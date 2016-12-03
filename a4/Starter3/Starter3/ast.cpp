@@ -93,7 +93,7 @@ int isScalar(data_type dType) // output for type_Unknown and type_any is undefin
 	return 0;
 }
 
-Scope::Scope(va_list args)
+Scope::Scope(va_list &args)
 {
 	line_num = va_arg(args, int);
 	declarations = va_arg(args, Node *);
@@ -108,7 +108,7 @@ Scope::~Scope()
 		delete statements;
 }
 
-MultiNode::MultiNode(node_kind kind_, va_list args)
+MultiNode::MultiNode(node_kind kind_, va_list &args)
 {
 	line_num = va_arg(args, int);
 	nodes = va_arg(args, Node *);
@@ -124,7 +124,7 @@ MultiNode::~MultiNode()
 		delete cur_node;
 }
 
-Declaration::Declaration(va_list args)
+Declaration::Declaration(va_list &args)
 {
 	line_num = va_arg(args, int);
 	is_const = va_arg(args, int);
@@ -141,7 +141,7 @@ Declaration::~Declaration()
 		delete expression;
 }
 
-IfStatement::IfStatement(va_list args)
+IfStatement::IfStatement(va_list &args)
 {
 	line_num = va_arg(args, int);
 	if_confition = va_arg(args, Node *);
@@ -159,7 +159,7 @@ IfStatement::~IfStatement()
 		delete else_body;
 }
 
-AssignStatement::AssignStatement(va_list args)
+AssignStatement::AssignStatement(va_list &args)
 {
 	line_num = va_arg(args, int);
 	variable = static_cast<Variable*> (va_arg(args, Node *));
@@ -175,7 +175,7 @@ AssignStatement::~AssignStatement()
 }
 
 
-Type::Type(va_list args)
+Type::Type(va_list &args)
 {
 	line_num = va_arg(args, int);
 	var_type = (data_type)va_arg(args, int);
@@ -192,7 +192,7 @@ Expression::Expression()
 	constantValue = false; // default false
 }
 
-Variable::Variable(va_list args)
+Variable::Variable(va_list &args)
 {
 	line_num = va_arg(args, int);
 	identifier = std::string(va_arg(args, char *));
@@ -206,7 +206,7 @@ Variable::~Variable()
 	// no children to delete
 }
 
-FunctionCall::FunctionCall(va_list args)
+FunctionCall::FunctionCall(va_list &args)
 {
 	line_num = va_arg(args, int);
 	func = (enum func_type)va_arg(args, int);
@@ -235,7 +235,7 @@ char *FunctionCall::func_to_str(enum func_type type)
 	}
 }
 
-Constructor::Constructor(va_list args)
+Constructor::Constructor(va_list &args)
 {
 	line_num = va_arg(args, int);
 	type = static_cast<Type*>(va_arg(args, Node *));
@@ -250,7 +250,7 @@ Constructor::~Constructor()
 		delete args_opt;
 }
 
-UnaryOP::UnaryOP(va_list args)
+UnaryOP::UnaryOP(va_list &args)
 {
 	line_num = va_arg(args, int);
 	uopt = (enum unary_opt)va_arg(args, int);
@@ -276,7 +276,7 @@ char *UnaryOP::uopt_to_string(enum unary_opt opt)
 	}
 }
 
-BinaryOP::BinaryOP(va_list args)
+BinaryOP::BinaryOP(va_list &args)
 {
 	line_num = va_arg(args, int);
 	bopt = (enum binary_opt)va_arg(args, int);
@@ -329,7 +329,7 @@ char *BinaryOP::bopt_to_string(enum binary_opt opt)
 	}
 }
 
-LiteralExp::LiteralExp(va_list args)
+LiteralExp::LiteralExp(va_list &args)
 {
 	line_num = va_arg(args, int);
 	lit_type = (enum data_type)va_arg(args, int);
@@ -359,7 +359,7 @@ Node* astAllocate(node_kind kind, ...) {
 	va_list args;
 	va_start(args, kind);
 
-	Node* pNode;
+	Node* pNode = NULL;
 	//	ast->line_num = va_arg(args, int); // handled within each constructor.
 	switch (kind) {
 	case SCOPE:
@@ -425,7 +425,7 @@ Node* astAllocate(node_kind kind, ...) {
 //}
 //	node *ast_allocate(node_kind kind, ...)
 //	{
-//		va_list args;
+//		va_list &args;
 //
 //		// make the node
 //		node *ast = (node *)malloc(sizeof(node));

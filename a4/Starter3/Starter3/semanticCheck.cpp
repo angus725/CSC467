@@ -16,8 +16,10 @@ int Scope::checkSemantic()
 	int semantic_fail = 0;
 	symbolCactus->pushScope();
 
-	semantic_fail = declarations->checkSemantic();
-	semantic_fail = semantic_fail |	statements->checkSemantic();
+	if (declarations)
+		semantic_fail = declarations->checkSemantic();
+	if (statements)
+		semantic_fail = semantic_fail |	statements->checkSemantic();
 
 	symbolCactus->popScope();
 	return semantic_fail;
@@ -26,11 +28,19 @@ int Scope::checkSemantic()
 int MultiNode::checkSemantic()
 {
 	int semantic_fail = 0;
+	if (cur_node)
+		semantic_fail = cur_node->checkSemantic();
+	if (nodes)
+		semantic_fail = semantic_fail | nodes->checkSemantic();
 
-	semantic_fail = cur_node->checkSemantic();
-	semantic_fail = semantic_fail | nodes->checkSemantic();
+	if (cur_node)
+	{
+		constantValue = cur_node->isConst();
+		if (nodes)
+			constantValue = constantValue & nodes->isConst();
 
-	constantValue = cur_node->isConst() & nodes->isConst();
+	}
+	//printf("LINE: %i, MultiNode CONSTANT: %i\n", line_num, constantValue);
 
 
 	return semantic_fail;
@@ -38,15 +48,26 @@ int MultiNode::checkSemantic()
 
 int MultiNode::countParameters() // non-multiNode leafs
 {
-	return nodes->countParameters() + cur_node->countParameters();
+	if (nodes && cur_node)
+		return nodes->countParameters() + cur_node->countParameters();
+	if (nodes)
+		return nodes->countParameters();
+	return cur_node->countParameters();
 }
 
 int MultiNode::isWriteOnly(){	return (cur_node->isWriteOnly() | nodes->isWriteOnly());}
 
 data_type MultiNode::getResultType()
 {
-	data_type ret1 = nodes->getResultType();
-	data_type ret2 = cur_node->getResultType();
+	data_type ret1 = TYPE_UNKNOWN, ret2 = TYPE_UNKNOWN;
+	if (nodes)
+		ret1 = nodes->getResultType();
+	if (cur_node)
+		ret2 = cur_node->getResultType();
+	if (ret1 == TYPE_UNKNOWN)
+		return ret2;
+	if (ret2 == TYPE_UNKNOWN)
+		return ret1;
 
 	if (ret1 != ret2)
 		return TYPE_ANY;
@@ -59,11 +80,13 @@ int Declaration::checkSemantic()
 	Symbol tempSymbol;
 
 
+
 	semantic_fail = type->checkSemantic();
-	semantic_fail = semantic_fail | expression->checkSemantic();
+	if (expression)
+		semantic_fail = expression->checkSemantic() | semantic_fail;
 
 	// type must equal argument
-	if (type->getResultType() != expression->getResultType())
+	if (expression && type->getResultType() != expression->getResultType())
 	{
 		SEMANTIC_ERROR("ERROR on line %i, expecting %s but got %s\n",
 			type->getLineNum(),
@@ -72,8 +95,10 @@ int Declaration::checkSemantic()
 	}
 
 	// const expressions are allowed, variables are not
-	if (this->isConst() && !(expression->isConst()))
+	if (this->isConst() && expression && !expression->isConst())
 		SEMANTIC_ERROR("ERROR on line %i, cannot assign a variable value to a const variable\n", this->line_num);
+
+	
 
 	//set the info for the new symbol
 	if (this->isConst())
@@ -105,7 +130,8 @@ int IfStatement::checkSemantic()
 
 	semantic_fail = if_confition->checkSemantic();
 	semantic_fail = semantic_fail | if_body->checkSemantic();
-	semantic_fail = semantic_fail | else_body->checkSemantic();
+	if (else_body)
+		semantic_fail = semantic_fail | else_body->checkSemantic();
 
 	// check if bool is used
 	if (if_confition->getResultType() != TYPE_BOOL)
@@ -171,7 +197,8 @@ int AssignStatement::checkSemantic()
 int Type::checkSemantic()
 {
 	int semantic_fail = 0;
-// nothing to do... I think.
+	constantValue = 1; // hack to get around stuff. Means a Type Cast is a constant cast
+
 	return semantic_fail;
 }
 
@@ -193,6 +220,9 @@ int Variable::checkSemantic()
 		}
 		var_type = var_type_to_base(var_type);
 	}
+	
+	if (pTempSymbol->isConstant)
+		constantValue = 1;
 	// TODO check bounds on array_index
 	// TODO assign array element type to var_type
 
@@ -280,7 +310,7 @@ int Constructor::checkSemantic()
 {
 	int semantic_fail = 0;
 	semantic_fail = type->checkSemantic();
-	semantic_fail = semantic_fail | args_opt->checkSemantic();
+	semantic_fail = args_opt->checkSemantic() | semantic_fail;
 
 	data_type tempType = type->getResultType();
 
@@ -288,10 +318,11 @@ int Constructor::checkSemantic()
 	if (array_len != args_opt->countParameters())
 		SEMANTIC_ERROR("ERROR on line %i, wrong number of arguments to constructor, expecting %d\n", line_num, array_len);
 	data_type unifiedType = args_opt->getResultType();
-	if (tempType != var_type_to_base(unifiedType))
+	if (var_type_to_base(tempType) != unifiedType)
 		SEMANTIC_ERROR("ERROR on line %i, wrong type of arguments to constructor, expecting %s\n", line_num, type_to_str(var_type_to_base(tempType)))
 	if (args_opt->isWriteOnly())
 		SEMANTIC_ERROR("ERROR on line %i, argument to constructor is write only\n", args_opt->getLineNum());
+	
 	if (args_opt->isConst())
 		constantValue = 1;
 
@@ -335,6 +366,8 @@ int UnaryOP::checkSemantic()
 		// DONE assign operand type to result type;
 		// DONE scalar and vectors only
 		// DONE check variable attributes ( see "Pre Defined Variables")
+
+	constantValue = operand->isConst();
 
 	return semantic_fail;
 }
