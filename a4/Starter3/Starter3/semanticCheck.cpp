@@ -28,13 +28,14 @@ int Scope::checkSemantic()
 int MultiNode::checkSemantic()
 {
 	int semantic_fail = 0;
+
 	if (cur_node)
 		semantic_fail = cur_node->checkSemantic();
+
 	if (nodes)
 		semantic_fail = semantic_fail | nodes->checkSemantic();
 
-	if (cur_node)
-	{
+	if (cur_node) {
 		constantValue = cur_node->isConst();
 		if (nodes)
 			constantValue = constantValue & nodes->isConst();

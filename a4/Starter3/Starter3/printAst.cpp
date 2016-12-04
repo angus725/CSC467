@@ -122,7 +122,7 @@ void LiteralExp::printSyntaxTree()
 	switch (lit_type)
 	{
 	case TYPE_BOOL:
-		printf("%s ", (val_bool) ? "true" : "false");
+		printf("%s ", (val_bool == -1) ? "true" : "false");
 		break;
 	case TYPE_INT:
 		printf("%d ", val_int);

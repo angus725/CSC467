@@ -25,7 +25,7 @@ CC      =g++
 CXX     =g++
 CFLAGS  =-g -O0 -Wall -Wno-write-strings -std=c++11
 #ugg, using -std=c++11 on CFLAGS is a horrible feeling. But the hack is easier than rewriting a bigger chunk of makefile
-CXXFLAGS =  -O0 -Wall -Wno-write-strings -std=c++11
+CXXFLAGS =  -g -O0 -Wall -Wno-write-strings -std=c++11
 LDLIBS  =-lfl
 
 LEX     =flex
@@ -43,9 +43,10 @@ YFLAGS  =-dtvy
 LEXER_OBJ =scanner.o
 PARSER_OBJ=parser.o
 AST_OBJ   =ast.o semantic.o symbol.o
+CODEGEN_OBJ =codeGen.o regAlloc.o
 #CODE_OBJ  =codegen.o  
 OBJs      =compiler467.o globalvars.o $(LEXER_OBJ) \
-           $(PARSER_OBJ) $(AST_OBJ)   
+           $(PARSER_OBJ) $(AST_OBJ) $(CODEGEN_OBJ)
 
 ###########################################################################
 #	PHONY rules

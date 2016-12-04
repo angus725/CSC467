@@ -16,7 +16,7 @@
 #include <iostream>
 #include <stdint.h>
 #include "intermediateRepresentation.h"
-
+#include "regAlloc.h"
 
 
 // Dummy node just so everything compiles, create your own node/nodes
@@ -144,6 +144,7 @@ public:
 	
 	//******		for generating IR list		******//
 	virtual void createAndInsertIRNode() = 0;
+	virtual int genARB() {return 0;};
 	
 	//***** "global variables" *******//
 	static int nestedIfCount;
@@ -165,6 +166,7 @@ public:
 	//int isWriteOnly(); // not sure what this should evaluate to. Default to -1
 	//	data_type getResultType() { return TYPE_INVALID; };
 	void createAndInsertIRNode();
+	int genARB();
 private:
 	ASTNode* declarations;
 	ASTNode* statements;
@@ -181,6 +183,7 @@ public:
 	data_type getResultType();
 	int countParameters();
 	void createAndInsertIRNode();
+	int genARB();
 protected:
 	node_kind kind;
 	ASTNode *nodes;
@@ -200,6 +203,7 @@ public:
 	//data_type getResultType() { return TYPE_INVALID; };
 	int isConst() { return is_const; }; // special case
 	void createAndInsertIRNode();
+	int genARB();
 protected:
 private:
 	int is_const;
@@ -219,6 +223,7 @@ public:
 	//int isWriteOnly(); // totally invalid call. makes no sense. returning -1 as per default
 	//	data_type getResultType() { return TYPE_INVALID; };
 	void createAndInsertIRNode();
+	int genARB();
 private:
 
 	ASTNode *if_confition;
@@ -236,6 +241,7 @@ public:
 	//int isWriteOnly(); // totally invalid call. makes no sense. returning -1 as per default
 	//	data_type getResultType() { return TYPE_INVALID; };
 	void createAndInsertIRNode();
+	int genARB();
 protected:
 
 private:
@@ -255,10 +261,11 @@ public:
 	//int isWriteOnly(); // totally invalid call. makes no sense. returning -1 as per default
 	data_type getResultType() { return var_type; }; // not quite expressionResultType, but a type none the less
 	void createAndInsertIRNode();
-
-private:
 	data_type var_type;
 	int array_bound;
+
+private:
+
 };
 
 class Expression : public ASTNode
@@ -269,6 +276,8 @@ public:
 	virtual void printSyntaxTree() = 0;
 	virtual int checkSemantic() = 0;
 	int is_expression() { return 1; };
+	Register *reg; //The register that stores the result of this expression
+	virtual Register *getUsedReg();
 protected:
 
 private:
@@ -287,6 +296,8 @@ public:
 	int get_array_bound();
 	std::string getID() { return identifier; };
 	void createAndInsertIRNode();
+	int genARB();
+	virtual Register *getUsedReg();
 private:
 	std::string identifier;
 	int array_index; // ie, the second 4 in vec4 vector[4]
@@ -307,6 +318,7 @@ public:
 	data_type getResultType() { return result_type; };
 	data_type CalcFuncResultType();
 	void createAndInsertIRNode();
+	int genARB();
 private:
 	char *func_to_str(enum func_type type);
 	func_type func;
@@ -324,6 +336,7 @@ public:
 	int isWriteOnly();
 	data_type getResultType() { return type->getResultType(); };
 	void createAndInsertIRNode();
+	int genARB();
 
 private:
 	Type *type;
@@ -340,6 +353,9 @@ public:
 	int isWriteOnly();
 	data_type getResultType() { return result_type; };
 	void createAndInsertIRNode();
+	int genARB();
+	Register *reclaimReg();
+
 
 private:
 	char *uopt_to_string(enum unary_opt opt);
@@ -358,6 +374,9 @@ public:
 	int isWriteOnly();
 	data_type getResultType() { return result_type; };
 	void createAndInsertIRNode();
+	int genARB();
+	Register *reclaimReg();
+
 private:
 	char *bopt_to_string(enum binary_opt opt);
 	binary_opt bopt;
@@ -377,6 +396,8 @@ public:
 	int isWriteOnly();
 	data_type getResultType() { return lit_type; };
 	void createAndInsertIRNode();
+	int genARB();
+
 private:
 	//static const bool constantValue = true; // might not be needed
 	data_type lit_type; // used by symantic checker "getResultType"

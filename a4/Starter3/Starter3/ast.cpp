@@ -164,6 +164,7 @@ AssignStatement::AssignStatement(va_list &args)
 	line_num = va_arg(args, int);
 	variable = static_cast<Variable*> (va_arg(args, ASTNode *));
 	expression = static_cast<Expression*> (va_arg(args, ASTNode *));
+	constantValue = false;
 }
 
 AssignStatement::~AssignStatement()
@@ -190,6 +191,12 @@ Type::~Type()
 Expression::Expression()
 {
 	constantValue = false; // default false
+	reg = NULL;
+}
+
+Register *Expression::getUsedReg()
+{
+	return this->reg;
 }
 
 Variable::Variable(va_list &args)
@@ -197,6 +204,8 @@ Variable::Variable(va_list &args)
 	line_num = va_arg(args, int);
 	identifier = std::string(va_arg(args, char *));
 	has_index = va_arg(args, int);
+	var_type = TYPE_UNKNOWN;
+	array_bound = 0;
 	if (has_index)
 		array_index = va_arg(args, int);
 }
@@ -204,6 +213,14 @@ Variable::Variable(va_list &args)
 Variable::~Variable()
 {
 	// no children to delete
+}
+
+/* Register holding a variable can't be reused
+ * until variable goes out of scope
+ */
+Register *Variable::getUsedReg()
+{
+	return NULL;
 }
 
 FunctionCall::FunctionCall(va_list &args)
@@ -263,6 +280,16 @@ UnaryOP::~UnaryOP()
 		delete operand;
 }
 
+/*
+ * Aside from variables, all registers used by
+ * expresisons can be reused
+ */
+Register *UnaryOP::reclaimReg()
+{
+
+	return this->operand->getUsedReg();
+}
+
 char *UnaryOP::uopt_to_string(enum unary_opt opt)
 {
 	switch (opt)
@@ -274,6 +301,20 @@ char *UnaryOP::uopt_to_string(enum unary_opt opt)
 	default:
 		return "";
 	}
+}
+
+/*
+ * Aside from variables, all registers used by
+ * expresisons can be reused
+ */
+Register *BinaryOP::reclaimReg()
+{
+	Register *reg = this->operand1->getUsedReg();
+
+	if (!reg)
+		reg = this->operand2->getUsedReg();
+
+	return reg;
 }
 
 BinaryOP::BinaryOP(va_list &args)

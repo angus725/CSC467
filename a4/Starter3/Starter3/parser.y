@@ -146,7 +146,7 @@ scope
   ;
 
 declarations
-  : declaration declarations
+  : declaration declarations 
       { 
       	$$ = astAllocate(MULTI_NODE, yyline, $2, $1);
       	yTRACE("declarations -> declarations declaration\n") 
@@ -386,12 +386,12 @@ expression
   /* literals */
   | TRUE_C
       {
-      	$$ = astAllocate(LITERAL_EXP, yyline, TYPE_BOOL, 1);
+      	$$ = astAllocate(LITERAL_EXP, yyline, TYPE_BOOL, -1);
       	yTRACE("expression -> TRUE_C \n")
       }
   | FALSE_C
       {
-      	$$ = astAllocate(LITERAL_EXP, yyline, TYPE_BOOL, 0);
+      	$$ = astAllocate(LITERAL_EXP, yyline, TYPE_BOOL, 1);
       	yTRACE("expression -> FALSE_C \n")
       }
   | INT_C
