@@ -247,7 +247,7 @@ int LiteralExp::genARB()
 		val = float(this->val_int);
 		break;
 	case TYPE_FLOAT:
-		val = float(this->val_bool);
+		val = float(this->val_float);
 		break;
 	default:
 		break;
