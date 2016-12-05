@@ -159,9 +159,9 @@ declarations
   ;
 
 statements
-  : statements statement
+  : statement statements  
       { 
-      	$$ = astAllocate(MULTI_NODE, yyline, $1, $2);
+      	$$ = astAllocate(MULTI_NODE, yyline, $2, $1);
       	yTRACE("statements -> statements statement\n") 
       }
   | 

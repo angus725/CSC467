@@ -30,11 +30,13 @@ void MultiNode::printSyntaxTree()
 	default:
 		break;
 	}
+	if (cur_node)
+		cur_node->printSyntaxTree();
 
-	cur_node->printSyntaxTree();
 	if (nodes)
 		nodes->printSyntaxTree();
-	if (cur_node->is_expression())
+
+	if (cur_node && cur_node->is_expression())
 		return;
 
 

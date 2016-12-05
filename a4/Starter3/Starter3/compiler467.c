@@ -107,7 +107,7 @@ int main (int argc, char *argv[]) {
   if (errorOccurred)
     fprintf(outputFile,"Failed to compile\n");
   else 
-	 //ast->genARB();
+	  codeGen(ast);
     ;
 /***********************************************************************
  * Post Compilation Cleanup

@@ -203,6 +203,15 @@ int Type::checkSemantic()
 	return semantic_fail;
 }
 
+int Type::get_array_bound() // This is duplicated with the one in Variable, but I'm too lazy to figure out the right OOP way to do this
+{
+	data_type dType = var_type_to_base(var_type);
+	if (var_type == TYPE_ANY || dType <= 0)
+		return -1;
+	return var_type - dType;
+}
+
+
 int Variable::checkSemantic()
 {
 	int semantic_fail = 0;

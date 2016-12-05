@@ -4,10 +4,6 @@
 #include <sstream>
 #include <map>
 
-
-#define DEBUG_CODEGEN 0
-#define OUTPUT_ARB(...) {fprintf(outputFile,  __VA_ARGS__); if (DEBUG_CODEGEN) fprintf(errorFile,  __VA_ARGS__);}
-
 std::unique_ptr<RegAllocator> reg_allocator(new RegAllocator);
 std::map <std::string, Register*> varRegMap;
 int Scope::genARB()
@@ -71,14 +67,21 @@ int AssignStatement::genARB()
 	this->expression->genARB();
 
 	oss << "MOV " << this->variable->reg->name << ", " << this->expression->reg->name;
-	OUTPUT_ARB("%s\n", oss.str().c_str())
+	OUTPUT_ARB("%s;\n", oss.str().c_str())
 	return 0;
 
 }
 
 int Variable::genARB()
 {
-	this->reg = varRegMap[this->identifier];
+	Register *regCopy = new Register(varRegMap[this->identifier]);
+
+	if (this->has_index) {
+		regCopy->component = this->index_to_reg_component(this->array_index);
+		regCopy->hasComponent = true;
+	}
+
+	this->reg = regCopy;
 	return 0;
 
 }
@@ -94,7 +97,36 @@ int FunctionCall::genARB()
 
 int Constructor::genARB()
 {
-//	switch (this->type->array_bound)
+	Register *result_reg;
+	std::ostringstream oss;
+	int i;
+	int array_bound = this->type->get_array_bound();
+
+	for (i = 0; i <= array_bound; i++)
+		this->args_opt->get_ith_node(i)->genARB();
+
+	result_reg = this->reclaimReg();
+	if (!result_reg)
+		result_reg = reg_allocator->getNewReg();
+
+	switch (array_bound) {
+	case (3):
+		oss << "MOV " << result_reg->name << ".w, "
+			<< static_cast <Expression *>(this->args_opt->get_ith_node(3))->reg->name << ";\n";
+	case (2):
+		oss << "MOV " << result_reg->name << ".z, "
+			<< static_cast <Expression *>(this->args_opt->get_ith_node(2))->reg->name << ";\n";
+	case (1):
+		oss << "MOV " << result_reg->name << ".y, "
+			<< static_cast <Expression *>(this->args_opt->get_ith_node(1))->reg->name << ";\n";
+	default:
+		oss << "MOV " << result_reg->name << ".x, "
+					<< static_cast <Expression *>(this->args_opt->get_ith_node(0))->reg->name << ";\n";
+	}
+
+	this->reg = result_reg;
+	OUTPUT_ARB("%s;\n", oss.str().c_str())
+
 
 	return 0;
 }
@@ -126,7 +158,7 @@ int UnaryOP::genARB()
 	}
 
 	this->reg = result_reg;
-	OUTPUT_ARB("%s\n", oss.str().c_str());
+	OUTPUT_ARB("%s;\n", oss.str().c_str());
 
 	return 0;
 
@@ -135,6 +167,59 @@ int UnaryOP::genARB()
 
 int BinaryOP::genARB()
 {
+	Register *result_reg;
+	std::ostringstream oss;
+
+	this->operand1->genARB();
+	this->operand2->genARB();
+
+	result_reg = this->reclaimReg();
+	if (!result_reg)
+		result_reg = reg_allocator->getNewReg();
+
+	switch (this->bopt)
+	{
+	case BOPT_AND:
+		return 0;
+	case BOPT_OR:
+		return 0;
+	case BOPT_EXPO:
+		return 0;
+	case BOPT_EQ:
+		return 0;
+	case BOPT_NEQ:
+		return 0;
+	case BOPT_LT:
+		return 0;
+	case BOPT_LEQ:
+		return 0;
+	case BOPT_GT:
+		return 0;
+	case BOPT_GEQ:
+		return 0;
+	case BOPT_ADD:
+		oss << "ADD " << result_reg->name << ", " << this->operand1->reg->name << ", "
+			<< this->operand2->reg->name << ";\n";
+		break;
+	case BOPT_SUB:
+		oss << "SUB " << result_reg->name << ", " << this->operand1->reg->name << ", "
+			<< this->operand2->reg->name << ";\n";
+		break;
+	case BOPT_MUL:
+		oss << "MUL " << result_reg->name << ", " << this->operand1->reg->name << ", "
+			<< this->operand2->reg->name << ";\n";
+		break;
+	case BOPT_DIV:
+		oss << "RCP " << this->operand2->reg->name << this->operand2->reg->name << ".x;\n";
+		oss << "MUL " << result_reg->name << ", " << this->operand1->reg->name << ", "
+					<< this->operand2->reg->name << ";\n";
+		break;
+	default:
+		return 0;
+	}
+
+	this->reg = result_reg;
+	OUTPUT_ARB("%s", oss.str().c_str());
 
 
 	return 0;
@@ -166,12 +251,15 @@ int LiteralExp::genARB()
 
 	oss << "MOV " << result_reg->name << ", " << val;
 
-	OUTPUT_ARB("%s\n", oss.str().c_str())
+	OUTPUT_ARB("%s;\n", oss.str().c_str())
 	return 0;
 
 }
 
 int codeGen(ASTNode *ast) {
+	std::ostringstream oss;
+	OUTPUT_ARB("!!ARBfp1.0\n")
 	ast->genARB();
+	OUTPUT_ARB("END\n")
 	return 0;
 }

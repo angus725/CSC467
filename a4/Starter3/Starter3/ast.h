@@ -114,7 +114,7 @@ enum unary_opt
 	UOPT_NOT,
 };
 
-
+int codeGen(ASTNode *ast);
 ASTNode* astAllocate(node_kind kind, ...); // calls each constructor
 data_type var_type_to_base(data_type var_type);
 char* type_to_str(data_type);
@@ -184,9 +184,10 @@ public:
 	int countParameters();
 	void createAndInsertIRNode();
 	int genARB();
+	ASTNode *get_ith_node(int i);
 protected:
 	node_kind kind;
-	ASTNode *nodes;
+	MultiNode *nodes;
 	ASTNode *cur_node;
 private:
 
@@ -261,9 +262,8 @@ public:
 	//int isWriteOnly(); // totally invalid call. makes no sense. returning -1 as per default
 	data_type getResultType() { return var_type; }; // not quite expressionResultType, but a type none the less
 	void createAndInsertIRNode();
+	int get_array_bound();
 	data_type var_type;
-	int array_bound;
-
 private:
 
 };
@@ -276,8 +276,11 @@ public:
 	virtual void printSyntaxTree() = 0;
 	virtual int checkSemantic() = 0;
 	int is_expression() { return 1; };
+
+	//Methods for codeGen
 	Register *reg; //The register that stores the result of this expression
-	virtual Register *getUsedReg();
+	virtual Register *getUsedReg() {return this->reg;}
+	virtual Register *reclaimReg() {return NULL;}
 protected:
 
 private:
@@ -296,8 +299,11 @@ public:
 	int get_array_bound();
 	std::string getID() { return identifier; };
 	void createAndInsertIRNode();
+
+	//For codeGen
+	std::string index_to_reg_component(int index);
 	int genARB();
-	virtual Register *getUsedReg();
+	Register *getUsedReg();
 private:
 	std::string identifier;
 	int array_index; // ie, the second 4 in vec4 vector[4]
@@ -337,10 +343,11 @@ public:
 	data_type getResultType() { return type->getResultType(); };
 	void createAndInsertIRNode();
 	int genARB();
+	Register *reclaimReg();
 
 private:
 	Type *type;
-	ASTNode *args_opt;
+	MultiNode *args_opt;
 };
 
 class UnaryOP : public Expression

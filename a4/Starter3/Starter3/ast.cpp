@@ -111,9 +111,19 @@ Scope::~Scope()
 MultiNode::MultiNode(node_kind kind_, va_list &args)
 {
 	line_num = va_arg(args, int);
-	nodes = va_arg(args, ASTNode *);
+	nodes = static_cast<MultiNode*>(va_arg(args, ASTNode *));
 	cur_node = va_arg(args, ASTNode *);
 	kind = kind_;
+}
+
+ASTNode *MultiNode::get_ith_node(int i) {
+	int j;
+	MultiNode *mn_ptr = this;
+	for (j = 0; j != i; j++, mn_ptr = mn_ptr->nodes) {
+	}
+
+	return mn_ptr->cur_node;
+
 }
 
 MultiNode::~MultiNode()
@@ -180,7 +190,6 @@ Type::Type(va_list &args)
 {
 	line_num = va_arg(args, int);
 	var_type = (data_type)va_arg(args, int);
-	array_bound = va_arg(args, int);
 }
 
 Type::~Type()
@@ -192,11 +201,6 @@ Expression::Expression()
 {
 	constantValue = false; // default false
 	reg = NULL;
-}
-
-Register *Expression::getUsedReg()
-{
-	return this->reg;
 }
 
 Variable::Variable(va_list &args)
@@ -212,7 +216,8 @@ Variable::Variable(va_list &args)
 
 Variable::~Variable()
 {
-	// no children to delete
+	if (this->reg)
+		delete this->reg;
 }
 
 /* Register holding a variable can't be reused
@@ -221,6 +226,21 @@ Variable::~Variable()
 Register *Variable::getUsedReg()
 {
 	return NULL;
+}
+
+std::string Variable::index_to_reg_component(int index) {
+	switch (index) {
+	case 0:
+		return std::string("x");
+	case 1:
+		return std::string("y");
+	case 2:
+		return std::string("z");
+	case 3:
+		return std::string("w");
+	default:
+		return std::string("OutOfBound");
+	}
 }
 
 FunctionCall::FunctionCall(va_list &args)
@@ -256,7 +276,7 @@ Constructor::Constructor(va_list &args)
 {
 	line_num = va_arg(args, int);
 	type = static_cast<Type*>(va_arg(args, ASTNode *));
-	args_opt = va_arg(args, ASTNode *);
+	args_opt = static_cast<MultiNode*>(va_arg(args, ASTNode *));
 }
 
 Constructor::~Constructor()
@@ -267,11 +287,26 @@ Constructor::~Constructor()
 		delete args_opt;
 }
 
+Register *Constructor::reclaimReg() {
+	int array_bound = this->type->get_array_bound();
+	int i;
+
+	for (i = 0; i <= array_bound; i++) {
+		Expression *exp = static_cast<Expression *>(this->args_opt->get_ith_node(i));
+		Register *reg = exp->getUsedReg();
+		if (reg)
+			return reg;
+	}
+
+	return NULL;
+}
+
 UnaryOP::UnaryOP(va_list &args)
 {
 	line_num = va_arg(args, int);
 	uopt = (enum unary_opt)va_arg(args, int);
 	operand = static_cast<Expression*> (va_arg(args, ASTNode *));
+	result_type = TYPE_UNKNOWN;
 }
 
 UnaryOP::~UnaryOP()
