@@ -56,7 +56,16 @@ int MultiNode::countParameters() // non-multiNode leafs
 	return cur_node->countParameters();
 }
 
-int MultiNode::isWriteOnly(){	return (cur_node->isWriteOnly() | nodes->isWriteOnly());}
+int MultiNode::isWriteOnly(){
+
+	if (cur_node->isWriteOnly())
+		return 1;
+
+	if (nodes)
+		return nodes->isWriteOnly();
+
+	return 0;
+}
 
 data_type MultiNode::getResultType()
 {

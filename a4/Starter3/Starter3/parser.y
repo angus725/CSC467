@@ -439,7 +439,7 @@ arguments
       }
   | expression
       {
-      	$$ = $1;
+      	$$ = astAllocate(MULTI_NODE, yyline, NULL, $1);
       	yTRACE("arguments -> expression \n")
       }
   ;

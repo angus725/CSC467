@@ -231,13 +231,13 @@ Register *Variable::getUsedReg()
 std::string Variable::index_to_reg_component(int index) {
 	switch (index) {
 	case 0:
-		return std::string("x");
+		return std::string(".x");
 	case 1:
-		return std::string("y");
+		return std::string(".y");
 	case 2:
-		return std::string("z");
+		return std::string(".z");
 	case 3:
-		return std::string("w");
+		return std::string(".w");
 	default:
 		return std::string("OutOfBound");
 	}

@@ -108,7 +108,7 @@ int main (int argc, char *argv[]) {
     fprintf(outputFile,"Failed to compile\n");
   else 
 	  codeGen(ast);
-    ;
+
 /***********************************************************************
  * Post Compilation Cleanup
  **********************************************************************/

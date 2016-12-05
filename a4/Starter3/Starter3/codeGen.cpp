@@ -3,6 +3,7 @@
 #include "common.h"
 #include <sstream>
 #include <map>
+#include <iostream>
 
 std::unique_ptr<RegAllocator> reg_allocator(new RegAllocator);
 std::map <std::string, Register*> varRegMap;
@@ -18,11 +19,13 @@ int Scope::genARB()
 
 int MultiNode::genARB()
 {
+	if (this->cur_node)
+		this->cur_node->genARB();
+
 	if (this->nodes)
 		this->nodes->genARB();
 
-	if (this->cur_node)
-		this->cur_node->genARB();
+
 
 	return 0;
 
@@ -79,6 +82,7 @@ int Variable::genARB()
 	if (this->has_index) {
 		regCopy->component = this->index_to_reg_component(this->array_index);
 		regCopy->hasComponent = true;
+		regCopy->name = regCopy->name + regCopy->component;
 	}
 
 	this->reg = regCopy;
@@ -125,7 +129,7 @@ int Constructor::genARB()
 	}
 
 	this->reg = result_reg;
-	OUTPUT_ARB("%s;\n", oss.str().c_str())
+	OUTPUT_ARB("%s", oss.str().c_str())
 
 
 	return 0;
@@ -177,6 +181,8 @@ int BinaryOP::genARB()
 	if (!result_reg)
 		result_reg = reg_allocator->getNewReg();
 
+	/*TODO: finish this*/
+
 	switch (this->bopt)
 	{
 	case BOPT_AND:
@@ -210,7 +216,7 @@ int BinaryOP::genARB()
 			<< this->operand2->reg->name << ";\n";
 		break;
 	case BOPT_DIV:
-		oss << "RCP " << this->operand2->reg->name << this->operand2->reg->name << ".x;\n";
+		oss << "RCP " << this->operand2->reg->name << ", " << this->operand2->reg->name << ";\n";
 		oss << "MUL " << result_reg->name << ", " << this->operand1->reg->name << ", "
 					<< this->operand2->reg->name << ";\n";
 		break;
