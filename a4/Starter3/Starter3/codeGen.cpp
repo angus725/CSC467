@@ -93,8 +93,56 @@ int Variable::genARB()
 
 int FunctionCall::genARB()
 {
+	Register *result_reg;
+	std::ostringstream oss;
+	int i;
+	Expression *arg1;
+	Expression *arg2;
+	int num_arg = this->args_opt ? this->args_opt->countParameters() : 0;
 
 
+	for (i = 0; i < num_arg; i++) {
+		this->args_opt->get_ith_node(i)->genARB();
+	}
+
+	result_reg = this->reclaimReg();
+	if (!result_reg)
+		result_reg = reg_allocator->getNewReg();
+
+	enum func_type
+	{
+		FUNC_DP3 = 0,
+		FUNC_LIT = 1,
+		FUNC_RSQ = 2,
+		FUNC_ANY = 3, // for bypassing errors
+
+	};
+
+	switch (this->func) {
+	case FUNC_DP3:
+		arg1 = static_cast<Expression*>(this->args_opt->get_ith_node(0));
+		arg2 = static_cast<Expression*>(this->args_opt->get_ith_node(1));
+		oss << "DP3 " << result_reg->name << ", " << arg1->reg->name << ", " << arg2->reg->name << ";\n";
+		break;
+	case FUNC_LIT:
+		arg1 = static_cast<Expression*>(this->args_opt->get_ith_node(0));
+		oss << "LIT " << arg1->reg->name << ", " << arg1->reg->name << ";\n";
+		if (result_reg != arg1->reg)
+			oss << "MOV " << result_reg->name << ", " << arg1->reg->name << ";\n";
+		break;
+	case FUNC_RSQ:
+		arg1 = static_cast<Expression*>(this->args_opt->get_ith_node(0));
+		oss << "RSQ " << arg1->reg->name << ", " << arg1->reg->name << ";\n";
+		if (result_reg != arg1->reg)
+			oss << "MOV " << result_reg->name << ", " << arg1->reg->name << ";\n";
+		break;
+	default:
+		return 0;
+	}
+
+	this->reg = result_reg;
+
+	OUTPUT_ARB("%s", oss.str().c_str())
 	return 0;
 }
 

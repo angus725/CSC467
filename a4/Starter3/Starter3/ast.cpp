@@ -247,7 +247,7 @@ FunctionCall::FunctionCall(va_list &args)
 {
 	line_num = va_arg(args, int);
 	func = (enum func_type)va_arg(args, int);
-	args_opt = va_arg(args, ASTNode *);
+	args_opt = static_cast<MultiNode*>(va_arg(args, ASTNode *));
 	result_type = TYPE_UNKNOWN;
 }
 
@@ -255,6 +255,20 @@ FunctionCall::~FunctionCall()
 {
 	if(args_opt)
 		delete args_opt;
+}
+
+Register *FunctionCall::reclaimReg() {
+	int num_arg = this->args_opt->countParameters();
+	int i;
+
+	for (i = 0; i < num_arg; i++) {
+		Expression *exp = static_cast<Expression *>(this->args_opt->get_ith_node(i));
+		Register *reg = exp->getUsedReg();
+		if (reg)
+			return reg;
+	}
+
+	return NULL;
 }
 
 char *FunctionCall::func_to_str(enum func_type type)

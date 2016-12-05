@@ -325,11 +325,12 @@ public:
 	data_type CalcFuncResultType();
 	void createAndInsertIRNode();
 	int genARB();
+	Register *reclaimReg();
 private:
 	char *func_to_str(enum func_type type);
 	func_type func;
 	data_type result_type;
-	ASTNode *args_opt;
+	MultiNode *args_opt;
 };
 
 class Constructor : public Expression
