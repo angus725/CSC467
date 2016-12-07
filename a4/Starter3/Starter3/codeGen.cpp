@@ -387,43 +387,43 @@ int BinaryOP::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 	case BOPT_AND://done
 		oss << "MUL " << result_reg->name << ", " << operand1->reg->name << ", " << operand2->reg->name << ";\n";
 		oss << "ABS " << result_reg->name << ", " << result_reg->name << ";\n";
-		return 0;
+		break;
 	case BOPT_OR://done
 		oss << "ABS " << result_reg->name << ", " << operand1->reg->name << ";\n";
 		oss << "ABS " << temp_reg->name << ", " << operand2->reg->name << ";\n";
 		oss << "ADD " << temp_reg->name << ", " << result_reg->name << ", " << temp_reg->name << ";\n";
 		oss << "SUB " << temp_reg->name << ", " << "0, " << temp_reg->name;
 		oss << "SLT " << result_reg->name << ", " << temp_reg->name << "0.0; \n";
-		return 0;
+		break;
 	case BOPT_EXPO://done
 		oss << "POW " << result_reg->name << this->operand1->reg->name
 			<< this->operand2->reg->name << ";\n";
-		return 0;
+		break;
 	case BOPT_EQ: //done, verification needed
 		oss << "SUB " << result_reg->name << ", " << operand1->reg->name << ", " << operand2->reg->name << ";\n";
 		oss << "SUB " << temp_reg->name << ", " << operand2->reg->name << ", " << operand1->reg->name << ";\n";
 		oss << "CMP " << temp_reg->name << ", " << temp_reg->name << ", 0.0, 1.0;\n";
 		oss << "CMP " << result_reg->name << ", " << temp_reg->name << ", 0.0, " << temp_reg->name << "; \n";
-		return 0;
+		break;
 	case BOPT_NEQ: //done, verification needed
 		oss << "SUB " << result_reg->name << ", " << operand1->reg->name << ", " << operand2->reg->name << ";\n";
 		oss << "SUB " << temp_reg->name << ", " << operand2->reg->name << ", " << operand1->reg->name << ";\n";
 		oss << "CMP " << temp_reg->name << ", " << temp_reg->name << ", 0.0, 1.0;\n";
 		oss << "CMP " << result_reg->name << ", " << temp_reg->name << ", 0.0, " << temp_reg->name << "; \n"; // equal
 		oss << "SUB " << result_reg->name << ", " << "0, " << result_reg->name; // not
-		return 0;
+		break;
 	case BOPT_LT://done
 		oss << "SLT " << result_reg->name << ", " << operand1->reg->name << ", " << operand2->reg->name << "; \n";
-		return 0;
+		break;
 	case BOPT_LEQ://done
 		oss << "SGE " << result_reg->name << ", " << operand2->reg->name << ", " << operand1->reg->name << "; \n";
-		return 0;
+		break;
 	case BOPT_GT://done
 		oss << "SLT " << result_reg->name << ", " << operand2->reg->name << ", " << operand1->reg->name << "; \n";
-		return 0;
+		break;
 	case BOPT_GEQ://done
 		oss << "SGE " << result_reg->name << ", " << operand1->reg->name << ", " << operand2->reg->name << "; \n";
-		return 0;
+		break;
 	case BOPT_ADD://done
 		oss << "ADD " << result_reg->name << ", " << this->operand1->reg->name << ", "
 			<< this->operand2->reg->name << ";\n";
