@@ -14,6 +14,13 @@ Register::Register(const std::string &reg_name, int reg_id) {
 	this->hasComponent = false;
 }
 
+Register::Register(const std::string &reg_name, int reg_id, std::string Component) {
+	this->name = reg_name;
+	this->id = reg_id;
+	this->hasComponent = true;
+	this->component = Component;
+}
+
 Register::Register(const Register *orig) {
 	this->name = orig->name;
 	this->id = orig->id;

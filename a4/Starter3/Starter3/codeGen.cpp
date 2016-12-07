@@ -380,7 +380,7 @@ int BinaryOP::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 
 	Register *temp_reg = reg_allocator->getNewReg();
 
-	/*TODO: finish this*/
+	/*done: finish this*/
 
 	switch (this->bopt)
 	{
@@ -389,7 +389,7 @@ int BinaryOP::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 		oss << "ABS " << result_reg->name << ", " << result_reg->name << ";\n";
 		return 0;
 	case BOPT_OR://done
-		oss << "ABS " << result_reg->name << ", " << operand1->reg->name << ";\n"; 	
+		oss << "ABS " << result_reg->name << ", " << operand1->reg->name << ";\n";
 		oss << "ABS " << temp_reg->name << ", " << operand2->reg->name << ";\n";
 		oss << "ADD " << temp_reg->name << ", " << result_reg->name << ", " << temp_reg->name << ";\n";
 		oss << "SUB " << temp_reg->name << ", " << "0, " << temp_reg->name;
@@ -485,6 +485,25 @@ int LiteralExp::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 
 int codeGen(ASTNode *ast) {
 	std::ostringstream oss;
+
+
+	varRegMap["gl_FragColor"] = new Register("result.color", INT32_MAX - 1);
+	varRegMap["gl_FragDepth"] = new Register("result.depth", INT32_MAX - 2);
+	varRegMap["gl_FragCoord"] = new Register("fragment.position", INT32_MAX - 3);
+	varRegMap["gl_TexCoord"] = new Register("fragment.texcoord", INT32_MAX - 4);
+	varRegMap["gl_Color"] = new Register("fragment.color", INT32_MAX - 5);
+	varRegMap["gl_Secondary"] = new Register("fragment.color.secondary", INT32_MAX - 6);
+	varRegMap["gl_FogFragCoord"] = new Register("fragment.fogcoord", INT32_MAX - 7);
+	varRegMap["gl_Light_Half"] = new Register("state.light[0].half", INT32_MAX - 8);
+	varRegMap["gl_Light_Ambient"] = new Register("state.lightmodel.ambient", INT32_MAX - 9);
+	varRegMap["gl_Material_Shininess"] = new Register("state.material.shininess", INT32_MAX - 10);
+	varRegMap["env1"] = new Register("program.env[1]", INT32_MAX - 11);
+	varRegMap["env2"] = new Register("program.env[2]", INT32_MAX - 12);
+	varRegMap["env3"] = new Register("program.env[3]", INT32_MAX - 13);
+
+
+
+
 	OUTPUT_ARB("!!ARBfp1.0\n")
 		ast->genARB(NULL);
 	OUTPUT_ARB("END\n")
