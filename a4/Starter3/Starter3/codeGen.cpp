@@ -53,7 +53,7 @@ void ConditionalAsgnStmt::merge(Register& conditionLTZero, ConditionalAsgnStmt& 
 		}
 		return;
 	}
-	
+
 
 	if (ifValue.tempDestination.id == -1) // only else exists
 	{
@@ -198,11 +198,11 @@ int AssignStatement::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 	std::ostringstream oss;
 
 	this->variable->genARB(NULL);
-	this->expression->genARB(NULL); // TODO: map expression returns to variable register (temporary if ifTable exists)
+	this->expression->genARB(NULL);
 
 	if (ifTable)
 	{
-		// TODO: if( ifTable), don't print, but push it upwards into the if statement table.
+		// if( ifTable), push it upwards into the if statement table.
 		ConditionalAsgnStmt &temp = (*ifTable)[variable->reg->name];
 
 		if (temp.tempDestination.id == -1)
@@ -226,7 +226,6 @@ int AssignStatement::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 
 int Variable::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 {
-	//TODO ifTable exists, then allocate a temporary register instead of using the real one. set this as an entry to the ifTable, and update as required.
 	Register *regCopy = new Register(varRegMap[this->identifier]);
 
 	if (this->has_index) {
@@ -379,29 +378,53 @@ int BinaryOP::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 	if (!result_reg)
 		result_reg = reg_allocator->getNewReg();
 
+	Register *temp_reg = reg_allocator->getNewReg();
+
 	/*TODO: finish this*/
 
 	switch (this->bopt)
 	{
-	case BOPT_AND:
+	case BOPT_AND://done
+		oss << "MUL " << result_reg->name << ", " << operand1->reg->name << ", " << operand2->reg->name << ";\n";
+		oss << "ABS " << result_reg->name << ", " << result_reg->name << ";\n";
 		return 0;
-	case BOPT_OR:
+	case BOPT_OR://done
+		oss << "ABS " << result_reg->name << ", " << operand1->reg->name << ";\n"; 	
+		oss << "ABS " << temp_reg->name << ", " << operand2->reg->name << ";\n";
+		oss << "ADD " << temp_reg->name << ", " << result_reg->name << ", " << temp_reg->name << ";\n";
+		oss << "SUB " << temp_reg->name << ", " << "0, " << temp_reg->name;
+		oss << "SLT " << result_reg->name << ", " << temp_reg->name << "0.0; \n";
 		return 0;
-	case BOPT_EXPO:
+	case BOPT_EXPO://done
+		oss << "POW " << result_reg->name << this->operand1->reg->name
+			<< this->operand2->reg->name << ";\n";
 		return 0;
-	case BOPT_EQ:
+	case BOPT_EQ: //done, verification needed
+		oss << "SUB " << result_reg->name << ", " << operand1->reg->name << ", " << operand2->reg->name << ";\n";
+		oss << "SUB " << temp_reg->name << ", " << operand2->reg->name << ", " << operand1->reg->name << ";\n";
+		oss << "CMP " << temp_reg->name << ", " << temp_reg->name << ", 0.0, 1.0;\n";
+		oss << "CMP " << result_reg->name << ", " << temp_reg->name << ", 0.0, " << temp_reg->name << "; \n";
 		return 0;
-	case BOPT_NEQ:
+	case BOPT_NEQ: //done, verification needed
+		oss << "SUB " << result_reg->name << ", " << operand1->reg->name << ", " << operand2->reg->name << ";\n";
+		oss << "SUB " << temp_reg->name << ", " << operand2->reg->name << ", " << operand1->reg->name << ";\n";
+		oss << "CMP " << temp_reg->name << ", " << temp_reg->name << ", 0.0, 1.0;\n";
+		oss << "CMP " << result_reg->name << ", " << temp_reg->name << ", 0.0, " << temp_reg->name << "; \n"; // equal
+		oss << "SUB " << result_reg->name << ", " << "0, " << result_reg->name; // not
 		return 0;
-	case BOPT_LT:
+	case BOPT_LT://done
+		oss << "SLT " << result_reg->name << ", " << operand1->reg->name << ", " << operand2->reg->name << "; \n";
 		return 0;
-	case BOPT_LEQ:
+	case BOPT_LEQ://done
+		oss << "SGE " << result_reg->name << ", " << operand2->reg->name << ", " << operand1->reg->name << "; \n";
 		return 0;
-	case BOPT_GT:
+	case BOPT_GT://done
+		oss << "SLT " << result_reg->name << ", " << operand2->reg->name << ", " << operand1->reg->name << "; \n";
 		return 0;
-	case BOPT_GEQ:
+	case BOPT_GEQ://done
+		oss << "SGE " << result_reg->name << ", " << operand1->reg->name << ", " << operand2->reg->name << "; \n";
 		return 0;
-	case BOPT_ADD:
+	case BOPT_ADD://done
 		oss << "ADD " << result_reg->name << ", " << this->operand1->reg->name << ", "
 			<< this->operand2->reg->name << ";\n";
 		break;
