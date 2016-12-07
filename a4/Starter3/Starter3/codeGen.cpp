@@ -350,9 +350,8 @@ int UnaryOP::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 		oss << "SUB " << result_reg->name << ", " << "0, " << this->operand->reg->name;
 		break;
 	case UOPT_NOT:
-		/* Logical not, since operand is either 1 or -1, this is just inversion,
-		 * or 1's complement*/
-		oss << "SUB " << result_reg->name << ", " << "1, " << this->operand->reg->name;
+		/* Logical not, since operand is either 1 or -1 it's just multiply by -1*/
+		oss << "MUL " << result_reg->name << ", " << "-1, " << this->operand->reg->name;
 		break;
 	default:
 		break;
