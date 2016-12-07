@@ -43,12 +43,12 @@ void ConditionalAsgnStmt::merge(Register& conditionLTZero, ConditionalAsgnStmt& 
 				temp.tempDestination = reg_allocator->getNewReg();
 			}
 			// CMP result, condition, trueValue(if), falseValue(else)
-			oss << "CMP " << temp.tempDestination.name << ", " << conditionLTZero.name << ", " << ifValue.tempDestination.name << ifValue.realDestination.name << ";\n";
+			oss << "CMP " << temp.tempDestination.name << ", " << conditionLTZero.name << ", " << ifValue.tempDestination.name << ", " << ifValue.realDestination.name << ";\n";
 			OUTPUT_ARB("%s", oss.str().c_str());
 		}
 		else
 		{
-			oss << "CMP " << ifValue.realDestination.name << ", " << conditionLTZero.name << ", " << ifValue.tempDestination.name << ifValue.realDestination.name << ";\n";
+			oss << "CMP " << ifValue.realDestination.name << ", " << conditionLTZero.name << ", " << ifValue.tempDestination.name << ", " << ifValue.realDestination.name << ";\n";
 			OUTPUT_ARB("%s", oss.str().c_str());
 		}
 		return;
@@ -68,12 +68,12 @@ void ConditionalAsgnStmt::merge(Register& conditionLTZero, ConditionalAsgnStmt& 
 				temp.tempDestination = reg_allocator->getNewReg();
 			}
 			// CMP result, condition, trueValue(if), falseValue(else)
-			oss << "CMP " << temp.tempDestination.name << ", " << conditionLTZero.name << ", " << elseValue.realDestination.name << elseValue.tempDestination.name << ";\n";
+			oss << "CMP " << temp.tempDestination.name << ", " << conditionLTZero.name << ", " << elseValue.realDestination.name << ", " << elseValue.tempDestination.name << ";\n";
 			OUTPUT_ARB("%s", oss.str().c_str());
 		}
 		else
 		{
-			oss << "CMP " << elseValue.realDestination.name << ", " << conditionLTZero.name << ", " << elseValue.realDestination.name << elseValue.tempDestination.name << ";\n";
+			oss << "CMP " << elseValue.realDestination.name << ", " << conditionLTZero.name << ", " << elseValue.realDestination.name <<  ", " <<elseValue.tempDestination.name << ";\n";
 			OUTPUT_ARB("%s", oss.str().c_str());
 		}
 		return;
@@ -92,12 +92,12 @@ void ConditionalAsgnStmt::merge(Register& conditionLTZero, ConditionalAsgnStmt& 
 			temp.tempDestination = reg_allocator->getNewReg();
 		}
 		// CMP result, condition, trueValue(if), falseValue(else)
-		oss << "CMP " << temp.tempDestination.name << ", " << conditionLTZero.name << ", " << ifValue.tempDestination.name << elseValue.tempDestination.name << ";\n";
+		oss << "CMP " << temp.tempDestination.name << ", " << conditionLTZero.name << ", " << ifValue.tempDestination.name <<  ", " <<elseValue.tempDestination.name << ";\n";
 		OUTPUT_ARB("%s", oss.str().c_str());
 	}
 	else
 	{
-		oss << "CMP " << elseValue.realDestination.name << ", " << conditionLTZero.name << ", " << ifValue.tempDestination.name << elseValue.tempDestination.name << ";\n";
+		oss << "CMP " << elseValue.realDestination.name << ", " << conditionLTZero.name << ", " << ifValue.tempDestination.name << ", " << elseValue.tempDestination.name << ";\n";
 		OUTPUT_ARB("%s", oss.str().c_str());
 	}
 	return;
