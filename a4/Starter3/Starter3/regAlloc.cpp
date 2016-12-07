@@ -2,6 +2,11 @@
 #include <sstream>
 
 
+Register::Register()
+{
+	id = -1;
+	hasComponent = false;
+}
 
 Register::Register(const std::string &reg_name, int reg_id) {
 	this->name = reg_name;

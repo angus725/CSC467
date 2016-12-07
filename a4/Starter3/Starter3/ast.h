@@ -15,6 +15,7 @@
 #include <string>
 #include <iostream>
 #include <stdint.h>
+#include <map>
 #include "intermediateRepresentation.h"
 #include "regAlloc.h"
 
@@ -36,6 +37,7 @@ class ASTNode;
 class Type;
 class Expression;
 class Variable;
+class ConditionalAsgnStmt;
 extern ASTNode *ast;
 
 
@@ -144,7 +146,7 @@ public:
 	
 	//******		for generating IR list		******//
 	virtual void createAndInsertIRNode() = 0;
-	virtual int genARB() {return 0;};
+	virtual int genARB(std::map<std::string, ConditionalAsgnStmt>* ) { return 0; };
 	
 	//***** "global variables" *******//
 	static int nestedIfCount;
@@ -166,7 +168,7 @@ public:
 	//int isWriteOnly(); // not sure what this should evaluate to. Default to -1
 	//	data_type getResultType() { return TYPE_INVALID; };
 	void createAndInsertIRNode();
-	int genARB();
+	int genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable);
 private:
 	ASTNode* declarations;
 	ASTNode* statements;
@@ -183,7 +185,7 @@ public:
 	data_type getResultType();
 	int countParameters();
 	void createAndInsertIRNode();
-	int genARB();
+	int genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable);
 	ASTNode *get_ith_node(int i);
 protected:
 	node_kind kind;
@@ -204,7 +206,7 @@ public:
 	//data_type getResultType() { return TYPE_INVALID; };
 	int isConst() { return is_const; }; // special case
 	void createAndInsertIRNode();
-	int genARB();
+	int genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable);
 protected:
 private:
 	int is_const;
@@ -224,10 +226,10 @@ public:
 	//int isWriteOnly(); // totally invalid call. makes no sense. returning -1 as per default
 	//	data_type getResultType() { return TYPE_INVALID; };
 	void createAndInsertIRNode();
-	int genARB();
+	int genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable);
 private:
 
-	ASTNode *if_confition;
+	Expression *if_confition; 
 	ASTNode *if_body;
 	ASTNode *else_body;
 };
@@ -242,7 +244,7 @@ public:
 	//int isWriteOnly(); // totally invalid call. makes no sense. returning -1 as per default
 	//	data_type getResultType() { return TYPE_INVALID; };
 	void createAndInsertIRNode();
-	int genARB();
+	int genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable);
 protected:
 
 private:
@@ -302,7 +304,7 @@ public:
 
 	//For codeGen
 	std::string index_to_reg_component(int index);
-	int genARB();
+	int genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable);
 	Register *getUsedReg();
 private:
 	std::string identifier;
@@ -324,7 +326,7 @@ public:
 	data_type getResultType() { return result_type; };
 	data_type CalcFuncResultType();
 	void createAndInsertIRNode();
-	int genARB();
+	int genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable);
 	Register *reclaimReg();
 private:
 	char *func_to_str(enum func_type type);
@@ -343,7 +345,7 @@ public:
 	int isWriteOnly();
 	data_type getResultType() { return type->getResultType(); };
 	void createAndInsertIRNode();
-	int genARB();
+	int genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable);
 	Register *reclaimReg();
 
 private:
@@ -361,7 +363,7 @@ public:
 	int isWriteOnly();
 	data_type getResultType() { return result_type; };
 	void createAndInsertIRNode();
-	int genARB();
+	int genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable);
 	Register *reclaimReg();
 
 
@@ -382,7 +384,7 @@ public:
 	int isWriteOnly();
 	data_type getResultType() { return result_type; };
 	void createAndInsertIRNode();
-	int genARB();
+	int genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable);
 	Register *reclaimReg();
 
 private:
@@ -404,7 +406,7 @@ public:
 	int isWriteOnly();
 	data_type getResultType() { return lit_type; };
 	void createAndInsertIRNode();
-	int genARB();
+	int genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable);
 
 private:
 	//static const bool constantValue = true; // might not be needed
@@ -415,6 +417,7 @@ private:
 		double val_float;
 	};
 };
+
 
 
 //

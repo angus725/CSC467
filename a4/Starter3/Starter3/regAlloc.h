@@ -8,6 +8,7 @@ class Register {
 public:
 	Register(const std::string &reg_name, int reg_id);
 	Register(const Register *orig);
+	Register(); // empty register for copy-constrcutor
 	std::string name;
 	int id; //for possible reclaiming of registers
 	bool hasComponent;

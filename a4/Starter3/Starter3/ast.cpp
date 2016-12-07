@@ -154,7 +154,7 @@ Declaration::~Declaration()
 IfStatement::IfStatement(va_list &args)
 {
 	line_num = va_arg(args, int);
-	if_confition = va_arg(args, ASTNode *);
+	if_confition = static_cast<Expression*>( va_arg(args, ASTNode *));
 	if_body = va_arg(args, ASTNode *);
 	else_body = va_arg(args, ASTNode *);
 }

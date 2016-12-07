@@ -7,23 +7,74 @@
 
 std::unique_ptr<RegAllocator> reg_allocator(new RegAllocator);
 std::map <std::string, Register*> varRegMap;
-int Scope::genARB()
+
+
+std::map<std::string, ConditionalAsgnStmt> popAndMerge(Register conditionLTZero, std::map<std::string, ConditionalAsgnStmt>& A, std::map<std::string, ConditionalAsgnStmt> &B)
+{
+	return std::map<std::string, ConditionalAsgnStmt>();
+}
+
+
+class ConditionalAsgnStmt	// per variable
+{
+public:
+	ConditionalAsgnStmt();
+	~ConditionalAsgnStmt();
+	ConditionalAsgnStmt(const ConditionalAsgnStmt &cpy){
+		comparationInst_Before_Condition << cpy.comparationInst_Before_Condition.str();
+		comparationInst_After_Condition << cpy.comparationInst_After_Condition.str();
+		tempDestination = cpy.tempDestination;
+	}
+
+	//friend ostream& operator<<(ostream& os, const ConditionalAsgnStmt& dt);
+
+	std::ostringstream comparationInst_Before_Condition;
+	std::ostringstream comparationInst_After_Condition;
+
+	//actual destination register is the map hash
+	Register tempDestination;
+private:
+	ConditionalAsgnStmt merge(ConditionalAsgnStmt A, ConditionalAsgnStmt B);
+	static int comparisonDepth;
+
+};
+int ConditionalAsgnStmt::comparisonDepth = 0;
+
+
+
+
+//std::string ConditionalAsgnStmt::print()
+//{
+//
+//}
+ConditionalAsgnStmt::ConditionalAsgnStmt()
+{
+}
+
+ConditionalAsgnStmt::~ConditionalAsgnStmt()
+{
+}
+
+
+
+
+int Scope::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 {
 	if (this->declarations)
-		this->declarations->genARB();
+		this->declarations->genARB(ifTable);
 	if (this->statements)
-		this->statements->genARB();
+		this->statements->genARB(ifTable);
 	return 0;
 }
 
 
-int MultiNode::genARB()
+int MultiNode::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 {
 	if (this->cur_node)
-		this->cur_node->genARB();
+		this->cur_node->genARB(ifTable);
 
 	if (this->nodes)
-		this->nodes->genARB();
+		this->nodes->genARB(ifTable);
 
 
 
@@ -32,13 +83,13 @@ int MultiNode::genARB()
 }
 
 
-int Declaration::genARB()
+int Declaration::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 {
 	Register *result_reg = NULL;
 	std::ostringstream oss;
 
 	if (this->expression) {
-		this->expression->genARB();
+		this->expression->genARB(ifTable);
 		result_reg = this->expression->reg;
 	}
 
@@ -54,29 +105,42 @@ int Declaration::genARB()
 }
 
 
-int IfStatement::genARB()
+int IfStatement::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 {
+	std::map<std::string, ConditionalAsgnStmt> ifstatementResolutionTable; // create a new table for each if statement going downwards
+	std::map<std::string, ConditionalAsgnStmt> elsestatementResolutionTable; // create a new table for each if statement going downwards
 
 
+	if_confition->genARB(NULL);
+	
+	if_body->genARB(&ifstatementResolutionTable);
+
+	if (else_body)
+		else_body->genARB(&elsestatementResolutionTable);
+
+	if (ifTable)
+		*ifTable = popAndMerge(if_confition->reg, ifstatementResolutionTable, elsestatementResolutionTable);
 	return 0;
 }
 
 
-int AssignStatement::genARB()
+int AssignStatement::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 {
 	std::ostringstream oss;
 
-	this->variable->genARB();
-	this->expression->genARB();
+	this->variable->genARB(ifTable);
+	this->expression->genARB(ifTable); // TODO: map expression returns to variable register (temporary if ifTable exists)
 
 	oss << "MOV " << this->variable->reg->name << ", " << this->expression->reg->name;
+	// TODO: if( ifTable), don't print, but push it upwards into the if statement table.
 	OUTPUT_ARB("%s;\n", oss.str().c_str())
 	return 0;
 
 }
 
-int Variable::genARB()
+int Variable::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 {
+	//TODO ifTable exists, then allocate a temporary register instead of using the real one. set this as an entry to the ifTable, and update as required.
 	Register *regCopy = new Register(varRegMap[this->identifier]);
 
 	if (this->has_index) {
@@ -91,7 +155,7 @@ int Variable::genARB()
 }
 
 
-int FunctionCall::genARB()
+int FunctionCall::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 {
 	Register *result_reg;
 	std::ostringstream oss;
@@ -102,7 +166,7 @@ int FunctionCall::genARB()
 
 
 	for (i = 0; i < num_arg; i++) {
-		this->args_opt->get_ith_node(i)->genARB();
+		this->args_opt->get_ith_node(i)->genARB(ifTable);
 	}
 
 	result_reg = this->reclaimReg();
@@ -147,7 +211,7 @@ int FunctionCall::genARB()
 }
 
 
-int Constructor::genARB()
+int Constructor::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 {
 	Register *result_reg;
 	std::ostringstream oss;
@@ -155,7 +219,7 @@ int Constructor::genARB()
 	int array_bound = this->type->get_array_bound();
 
 	for (i = 0; i <= array_bound; i++)
-		this->args_opt->get_ith_node(i)->genARB();
+		this->args_opt->get_ith_node(i)->genARB(ifTable);
 
 	result_reg = this->reclaimReg();
 	if (!result_reg)
@@ -184,12 +248,12 @@ int Constructor::genARB()
 }
 
 
-int UnaryOP::genARB()
+int UnaryOP::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 {
 	Register *result_reg;
 	std::ostringstream oss;
 
-	this->operand->genARB();
+	this->operand->genARB(ifTable);
 
 	result_reg = this->reclaimReg();
 	if (!result_reg)
@@ -217,13 +281,13 @@ int UnaryOP::genARB()
 }
 
 
-int BinaryOP::genARB()
+int BinaryOP::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 {
 	Register *result_reg;
 	std::ostringstream oss;
 
-	this->operand1->genARB();
-	this->operand2->genARB();
+	this->operand1->genARB(ifTable);
+	this->operand2->genARB(ifTable);
 
 	result_reg = this->reclaimReg();
 	if (!result_reg)
@@ -281,7 +345,7 @@ int BinaryOP::genARB()
 }
 
 
-int LiteralExp::genARB()
+int LiteralExp::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 {
 	Register *result_reg = reg_allocator->getNewReg();
 	double val = 0.0;
@@ -313,7 +377,7 @@ int LiteralExp::genARB()
 int codeGen(ASTNode *ast) {
 	std::ostringstream oss;
 	OUTPUT_ARB("!!ARBfp1.0\n")
-	ast->genARB();
+	ast->genARB(NULL);
 	OUTPUT_ARB("END\n")
 	return 0;
 }
