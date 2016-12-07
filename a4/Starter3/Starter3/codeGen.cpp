@@ -9,59 +9,129 @@ std::unique_ptr<RegAllocator> reg_allocator(new RegAllocator);
 std::map <std::string, Register*> varRegMap;
 
 
-std::map<std::string, ConditionalAsgnStmt> popAndMerge(Register conditionLTZero, std::map<std::string, ConditionalAsgnStmt>& A, std::map<std::string, ConditionalAsgnStmt> &B)
-{
-	return std::map<std::string, ConditionalAsgnStmt>();
-}
-
-
 class ConditionalAsgnStmt	// per variable
 {
 public:
-	ConditionalAsgnStmt();
-	~ConditionalAsgnStmt();
-	ConditionalAsgnStmt(const ConditionalAsgnStmt &cpy){
-		comparationInst_Before_Condition << cpy.comparationInst_Before_Condition.str();
-		comparationInst_After_Condition << cpy.comparationInst_After_Condition.str();
-		tempDestination = cpy.tempDestination;
-	}
+	ConditionalAsgnStmt(){};
+	~ConditionalAsgnStmt(){};
 
-	//friend ostream& operator<<(ostream& os, const ConditionalAsgnStmt& dt);
-
-	std::ostringstream comparationInst_Before_Condition;
-	std::ostringstream comparationInst_After_Condition;
-
-	//actual destination register is the map hash
+	Register realDestination;
 	Register tempDestination;
-private:
-	ConditionalAsgnStmt merge(ConditionalAsgnStmt A, ConditionalAsgnStmt B);
-	static int comparisonDepth;
+	static void merge(Register& conditionLTZero, ConditionalAsgnStmt& A, ConditionalAsgnStmt& B, std::map<std::string, ConditionalAsgnStmt>* ifTable);
 
+private:
+	static int comparisonDepth;
 };
 int ConditionalAsgnStmt::comparisonDepth = 0;
 
+//ifValue.realDestination must be equal to elseValue.realDestination, unless one does not exist
+void ConditionalAsgnStmt::merge(Register& conditionLTZero, ConditionalAsgnStmt& ifValue, ConditionalAsgnStmt& elseValue, std::map<std::string, ConditionalAsgnStmt>* ifTable){
+	std::ostringstream oss;
+
+	if (ifValue.tempDestination.id == -1 && elseValue.tempDestination.id == -1)
+		return; // nothing done, since we're merging garbage
+	if (elseValue.tempDestination.id == -1) // only ifValue exists
+	{
+		if (ifTable)
+		{
+			// if( ifTable), push it upwards into the if statement table.
+			ConditionalAsgnStmt &temp = (*ifTable)[ifValue.realDestination.name];
+
+			if (temp.tempDestination.id == -1)
+			{
+				temp.realDestination = ifValue.realDestination;
+				temp.tempDestination = reg_allocator->getNewReg();
+			}
+			// CMP result, condition, trueValue(if), falseValue(else)
+			oss << "CMP " << temp.tempDestination.name << ", " << conditionLTZero.name << ", " << ifValue.tempDestination.name << ifValue.realDestination.name << ";\n";
+			OUTPUT_ARB("%s", oss.str().c_str());
+		}
+		else
+		{
+			oss << "CMP " << ifValue.realDestination.name << ", " << conditionLTZero.name << ", " << ifValue.tempDestination.name << ifValue.realDestination.name << ";\n";
+			OUTPUT_ARB("%s", oss.str().c_str());
+		}
+		return;
+	}
+	
+
+	if (ifValue.tempDestination.id == -1) // only else exists
+	{
+		if (ifTable)
+		{
+			// if( ifTable), push it upwards into the if statement table.
+			ConditionalAsgnStmt &temp = (*ifTable)[elseValue.realDestination.name];
+
+			if (temp.tempDestination.id == -1)
+			{
+				temp.realDestination = elseValue.realDestination;
+				temp.tempDestination = reg_allocator->getNewReg();
+			}
+			// CMP result, condition, trueValue(if), falseValue(else)
+			oss << "CMP " << temp.tempDestination.name << ", " << conditionLTZero.name << ", " << elseValue.realDestination.name << elseValue.tempDestination.name << ";\n";
+			OUTPUT_ARB("%s", oss.str().c_str());
+		}
+		else
+		{
+			oss << "CMP " << elseValue.realDestination.name << ", " << conditionLTZero.name << ", " << elseValue.realDestination.name << elseValue.tempDestination.name << ";\n";
+			OUTPUT_ARB("%s", oss.str().c_str());
+		}
+		return;
+	}
 
 
+	//both exist
+	if (ifTable)
+	{
+		// if( ifTable), push it upwards into the if statement table.
+		ConditionalAsgnStmt &temp = (*ifTable)[ifValue.realDestination.name]; //ifValue.realDestination must be equal to elseValue.realDestination
 
-//std::string ConditionalAsgnStmt::print()
-//{
-//
-//}
-ConditionalAsgnStmt::ConditionalAsgnStmt()
-{
+		if (temp.tempDestination.id == -1)
+		{
+			temp.realDestination = ifValue.realDestination;
+			temp.tempDestination = reg_allocator->getNewReg();
+		}
+		// CMP result, condition, trueValue(if), falseValue(else)
+		oss << "CMP " << temp.tempDestination.name << ", " << conditionLTZero.name << ", " << ifValue.tempDestination.name << elseValue.tempDestination.name << ";\n";
+		OUTPUT_ARB("%s", oss.str().c_str());
+	}
+	else
+	{
+		oss << "CMP " << elseValue.realDestination.name << ", " << conditionLTZero.name << ", " << ifValue.tempDestination.name << elseValue.tempDestination.name << ";\n";
+		OUTPUT_ARB("%s", oss.str().c_str());
+	}
+	return;
+
 }
 
-ConditionalAsgnStmt::~ConditionalAsgnStmt()
+struct initdBool
 {
-}
+	initdBool() { Bool = false; }
+	bool Bool;
+};
 
+// ifTable is for upper level ifTable to be merged into. If it doesn't exist, that's OK
+void popAndMerge(Register conditionLTZero, std::map<std::string, ConditionalAsgnStmt>& ifValue, std::map<std::string, ConditionalAsgnStmt> &elseValue, std::map<std::string, ConditionalAsgnStmt>* ifTable)
+{
+	std::map<std::string, initdBool> mergedEnteries;
+	for (std::map<std::string, ConditionalAsgnStmt>::iterator ifIt = ifValue.begin(); ifIt != ifValue.end(); ifIt++) {
+		ConditionalAsgnStmt::merge(conditionLTZero, ifValue[ifIt->first], elseValue[ifIt->first], ifTable);
+		mergedEnteries[ifIt->first].Bool = true;
+	}
+	for (std::map<std::string, ConditionalAsgnStmt>::iterator elseIt = elseValue.begin(); elseIt != elseValue.end(); elseIt++) {
+		if (mergedEnteries[elseIt->first].Bool) // already merged
+			continue;
+		ConditionalAsgnStmt::merge(conditionLTZero, ifValue[elseIt->first], elseValue[elseIt->first], ifTable);
+	}
+	return;
+}
 
 
 
 int Scope::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 {
 	if (this->declarations)
-		this->declarations->genARB(ifTable);
+		this->declarations->genARB(NULL); // declarations within a if statement cannot affect outside it
 	if (this->statements)
 		this->statements->genARB(ifTable);
 	return 0;
@@ -89,7 +159,7 @@ int Declaration::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 	std::ostringstream oss;
 
 	if (this->expression) {
-		this->expression->genARB(ifTable);
+		this->expression->genARB(NULL);  // declarations within a if statement cannot affect outside it
 		result_reg = this->expression->reg;
 	}
 
@@ -112,14 +182,13 @@ int IfStatement::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 
 
 	if_confition->genARB(NULL);
-	
+
 	if_body->genARB(&ifstatementResolutionTable);
 
 	if (else_body)
 		else_body->genARB(&elsestatementResolutionTable);
 
-	if (ifTable)
-		*ifTable = popAndMerge(if_confition->reg, ifstatementResolutionTable, elsestatementResolutionTable);
+	popAndMerge(if_confition->reg, ifstatementResolutionTable, elsestatementResolutionTable, ifTable);
 	return 0;
 }
 
@@ -128,12 +197,29 @@ int AssignStatement::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 {
 	std::ostringstream oss;
 
-	this->variable->genARB(ifTable);
-	this->expression->genARB(ifTable); // TODO: map expression returns to variable register (temporary if ifTable exists)
+	this->variable->genARB(NULL);
+	this->expression->genARB(NULL); // TODO: map expression returns to variable register (temporary if ifTable exists)
 
-	oss << "MOV " << this->variable->reg->name << ", " << this->expression->reg->name;
-	// TODO: if( ifTable), don't print, but push it upwards into the if statement table.
-	OUTPUT_ARB("%s;\n", oss.str().c_str())
+	if (ifTable)
+	{
+		// TODO: if( ifTable), don't print, but push it upwards into the if statement table.
+		ConditionalAsgnStmt &temp = (*ifTable)[variable->reg->name];
+
+		if (temp.tempDestination.id == -1)
+		{
+			temp.realDestination = variable->reg;
+			temp.tempDestination = reg_allocator->getNewReg();
+		}
+
+		oss << "MOV " << temp.tempDestination.name << ", " << this->expression->reg->name << ";\n";
+		OUTPUT_ARB("%s", oss.str().c_str());
+
+	}
+	else // standard case
+	{
+		oss << "MOV " << this->variable->reg->name << ", " << this->expression->reg->name << ";\n";
+		OUTPUT_ARB("%s", oss.str().c_str());
+	}
 	return 0;
 
 }
@@ -207,7 +293,7 @@ int FunctionCall::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 	this->reg = result_reg;
 
 	OUTPUT_ARB("%s", oss.str().c_str())
-	return 0;
+		return 0;
 }
 
 
@@ -226,25 +312,25 @@ int Constructor::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 		result_reg = reg_allocator->getNewReg();
 
 	switch (array_bound) {
-	case (3):
+	case (3) :
 		oss << "MOV " << result_reg->name << ".w, "
-			<< static_cast <Expression *>(this->args_opt->get_ith_node(3))->reg->name << ";\n";
-	case (2):
+		<< static_cast <Expression *>(this->args_opt->get_ith_node(3))->reg->name << ";\n";
+	case (2) :
 		oss << "MOV " << result_reg->name << ".z, "
-			<< static_cast <Expression *>(this->args_opt->get_ith_node(2))->reg->name << ";\n";
-	case (1):
+		<< static_cast <Expression *>(this->args_opt->get_ith_node(2))->reg->name << ";\n";
+	case (1) :
 		oss << "MOV " << result_reg->name << ".y, "
-			<< static_cast <Expression *>(this->args_opt->get_ith_node(1))->reg->name << ";\n";
+		<< static_cast <Expression *>(this->args_opt->get_ith_node(1))->reg->name << ";\n";
 	default:
 		oss << "MOV " << result_reg->name << ".x, "
-					<< static_cast <Expression *>(this->args_opt->get_ith_node(0))->reg->name << ";\n";
+			<< static_cast <Expression *>(this->args_opt->get_ith_node(0))->reg->name << ";\n";
 	}
 
 	this->reg = result_reg;
 	OUTPUT_ARB("%s", oss.str().c_str())
 
 
-	return 0;
+		return 0;
 }
 
 
@@ -330,7 +416,7 @@ int BinaryOP::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 	case BOPT_DIV:
 		oss << "RCP " << this->operand2->reg->name << ", " << this->operand2->reg->name << ";\n";
 		oss << "MUL " << result_reg->name << ", " << this->operand1->reg->name << ", "
-					<< this->operand2->reg->name << ";\n";
+			<< this->operand2->reg->name << ";\n";
 		break;
 	default:
 		return 0;
@@ -370,14 +456,14 @@ int LiteralExp::genARB(std::map<std::string, ConditionalAsgnStmt>* ifTable)
 	oss << "MOV " << result_reg->name << ", " << val;
 
 	OUTPUT_ARB("%s;\n", oss.str().c_str())
-	return 0;
+		return 0;
 
 }
 
 int codeGen(ASTNode *ast) {
 	std::ostringstream oss;
 	OUTPUT_ARB("!!ARBfp1.0\n")
-	ast->genARB(NULL);
+		ast->genARB(NULL);
 	OUTPUT_ARB("END\n")
-	return 0;
+		return 0;
 }
