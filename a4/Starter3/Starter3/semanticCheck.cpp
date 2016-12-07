@@ -174,7 +174,7 @@ int AssignStatement::checkSemantic()
 	}
 
 	// match types of assigner and assignee
-	if (pTempSymbol->var_type != expression->getResultType())
+	if (variable->getResultType() != expression->getResultType())
 	{
 		SEMANTIC_ERROR("ERROR on line %i, %s is type %s and cannot be assigned type %s\n",
 			variable->getLineNum(),
@@ -415,7 +415,7 @@ int BinaryOP::checkSemantic()
 			result_type = TYPE_BOOL;
 		else
 		{
-			SEMANTIC_ERROR("ERROR on line %i, wrong type passed to binary operator\n", line_num)
+			SEMANTIC_ERROR("ERROR on line %i, wrong type passed to binary operator for || or &&\n", line_num)
 				result_type = TYPE_ANY;
 		}
 		break;
@@ -428,7 +428,7 @@ int BinaryOP::checkSemantic()
 			result_type = TYPE_BOOL;
 		else
 		{
-			SEMANTIC_ERROR("ERROR on line %i, wrong type passed to binary operator\n", line_num)
+			SEMANTIC_ERROR("ERROR on line %i, wrong type passed to binary operator for > < <= or >=\n", line_num)
 				result_type = TYPE_ANY;
 		}
 		break;
@@ -438,7 +438,7 @@ int BinaryOP::checkSemantic()
 			result_type = TYPE_BOOL;
 		else
 		{
-			SEMANTIC_ERROR("ERROR on line %i, wrong type passed to binary operator\n", line_num)
+			SEMANTIC_ERROR("ERROR on line %i, wrong type passed to binary operator for == or !=\n", line_num)
 				result_type = TYPE_ANY;
 		}
 		break;
@@ -452,7 +452,7 @@ int BinaryOP::checkSemantic()
 			result_type = resultTypeB;
 		else
 		{
-			SEMANTIC_ERROR("ERROR on line %i, wrong type passed to binary operator\n", line_num)
+			SEMANTIC_ERROR("ERROR on line %i, wrong type passed to binary operator for *\n", line_num)
 				result_type = TYPE_ANY;
 		}
 		break;
@@ -463,10 +463,10 @@ int BinaryOP::checkSemantic()
 			result_type = resultTypeA;
 		else
 		{
-			SEMANTIC_ERROR("ERROR on line %i, wrong type passed to binary operator\n", line_num)
+			SEMANTIC_ERROR("ERROR on line %i, wrong type passed to binary operator for + or -\n", line_num)
 				result_type = TYPE_ANY;
 		}
-
+		break;
 		//arithmatic scalar only
 	case    BOPT_EXPO:
 	case    BOPT_DIV:
@@ -474,7 +474,7 @@ int BinaryOP::checkSemantic()
 			result_type = resultTypeA;
 		else
 		{
-			SEMANTIC_ERROR("ERROR on line %i, wrong type passed to binary operator\n", line_num)
+			SEMANTIC_ERROR("ERROR on line %i, wrong type passed to binary operator for ^ or /\n", line_num)
 				result_type = TYPE_ANY;
 		}
 		break;
