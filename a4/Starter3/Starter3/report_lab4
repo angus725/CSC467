@@ -1,0 +1,30 @@
+Doc on Lab3 is in file report_lab3
+
+Implementation of Non-trivial Math Operations:
+	Negation: Implemented as subtraction from 0
+	Logical Not: Implemented as multiply by -1
+
+Boolean type:
+	Boolean true is -1 false is +1. Done this way
+	to fit the way CMP works
+
+Constants:
+	Abusing implicit constant register creation,
+	a constant is handled by Mov temp_reg, literal
+
+Code Generation:
+	Declaration:
+		Allocate a register for the variable and do a MOV if there is an expression,
+		insert the register, var mapping into the var_reg_map
+
+	Assignment:
+		Generate a MOV instruction
+	Variable:
+		Find the register from the var_reg_map
+	Constructor:
+		Generate a MOV instruction for each vector component
+	Func_call:
+		Map to the equivalent ARB instructions
+	UnaryOp and BinaryOp:
+		Generate 1 or more instructions depending on the operation
+	
