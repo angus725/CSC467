@@ -1,13 +1,32 @@
 Doc on Lab3 is in file report_lab3
 
 Implementation of Non-trivial Math Operations:
-	Negation: Implemented as subtraction from 0
-	Logical Not: Implemented as multiply by -1
-
+	Negation:
+		Implemented as subtraction from 0
+	Logical Not:
+		Implemented as multiply by -1
+	AND:
+		Implemented as multiplication then absolute value so any comparisons done with it are still OK
+	OR:
+		Implemented as comparsion between ( the negative of (the sum of the inputs))). If it is non-0, it is true 
+	EQ:
+		Implemented as the difference between two variables. (Subtract then compare)
+	Not EQ:
+		Implemented as Negation(EQ)
+	 
 Boolean type:
 	Boolean true is -1 false is +1. Done this way
 	to fit the way CMP works
 
+If Statements:
+	For each if statement, a list is constructed containing the variable outside the scope of the statement
+	 that each branch will modify.
+	At the end of each if statement, 1 or 2 lists are merged using comparison operators.
+
+	For nexted if statements, this merged list is modified to write to additional temporary registers before
+		being passed onto the upper If Statement.
+	When there is no higher Statement, the final results are printed as using comparison operators.
+	
 Constants:
 	Abusing implicit constant register creation,
 	a constant is handled by Mov temp_reg, literal
@@ -16,7 +35,8 @@ Code Generation:
 	Declaration:
 		Allocate a register for the variable and do a MOV if there is an expression,
 		insert the register, var mapping into the var_reg_map
-
+	If Statement:
+		See "If Statement" section.
 	Assignment:
 		Generate a MOV instruction
 	Variable:
