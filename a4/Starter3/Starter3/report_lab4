@@ -47,4 +47,5 @@ Code Generation:
 		Map to the equivalent ARB instructions
 	UnaryOp and BinaryOp:
 		Generate 1 or more instructions depending on the operation
+		see non-trivial math operation section
 	
